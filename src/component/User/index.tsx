@@ -1,6 +1,6 @@
-"use client"
-
+"use client";
 import * as React from "react"
+import { useState,useEffect } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -41,114 +41,31 @@ import {
 } from "@/components/ui/table"
 import { MdDelete } from "react-icons/md";
 
-const data: Payment[] = [
-  {
-    id: "m5gr84i9",
-    name:"arabin bhattarai",
-    email: "ken99@yahoo.com",
-    phone: 9851000,
-    address:"basundhara"
-  },
-  {
-    id: "m5gr84i9",
-    name:"brabin bhattarai",
-    email: "ken99@yahoo.com",
-    phone: 9851000,
-    address:"basundhara"
-  },
-  {
-    id: "m5gr84i9",
-    name:"aaarabin bhattarai",
-    email: "ken99@yahoo.com",
-    phone: 9851000,
-    address:"basundhara"
-  },
-  {
-    id: "m5gr84i9",
-    name:"aarabin bhattarai",
-    email: "rabin@yahoo.com",
-    phone: 9851000,
-    address:"basundhara"
-  },
-  {
-    id: "m5gr84i9",
-    name:"rabin bhattarai",
-    email: "ken99@yahoo.com",
-    phone: 9851000,
-    address:"basundhara"
-  },
-  {
-    id: "m5gr84i9",
-    name:"rabin bhattarai",
-    email: "ken99@yahoo.com",
-    phone: 9851000,
-    address:"basundhara"
-  },
-  {
-    id: "m5gr84i9",
-    name:"rabin bhattarai",
-    email: "ken99@yahoo.com",
-    phone: 9851000,
-    address:"basundhara"
-  },
-  {
-    id: "m5gr84i9",
-    name:"rabin bhattarai",
-    email: "ken99@yahoo.com",
-    phone: 9851000,
-    address:"basundhara"
-  },
-  {id: "m5gr84i9",
-    name:"rabin bhattarai",
-    email: "ken99@yahoo.com",
-    phone: 9851000,
-    address:"basundhara"
-  },
-  {
-    id: "m5gr84i9",
-    name:"rabin bhattarai",
-    email: "ken99@yahoo.com",
-    phone: 9851000,
-    address:"basundhara"
-  },
-]
-
-
-
-  
- 
-  
-
-
+import { getAllUser } from "@/services/user";
 
 export type Payment = {
-  id: string
-  name:string
-  phone: number
-  email: string
-  address:string
-}
+  id: string;
+  name: string;
+  phone: number;
+  email: string;
+  address: string;
+};
 
 export const columns: ColumnDef<Payment>[] = [
-
   {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <div>
-            Name
-           <Button
+    accessorKey: "fullName",
+    header: ({ column }) => (
+      <div>
+        Name
+        <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          
           <ArrowUpDown />
         </Button>
-        </div>
-        
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("name")}</div>,
+      </div>
+    ),
+    cell: ({ row }) => <div>{row.getValue("fullName")}</div>,
   },
   {
     accessorKey: "email",
@@ -164,19 +81,13 @@ export const columns: ColumnDef<Payment>[] = [
       <div className="capitalize">{row.getValue("address")}</div>
     ),
   },
-
   {
     accessorKey: "phone",
     header: () => <div className="text-center">Phone number</div>,
     cell: ({ row }) => {
-      const phone = parseFloat(row.getValue("phone"))
-
-      // Format the amount as a dollar amount
-      
-
-      return <div className="text-center font-medium">{phone}</div>
+      const phone = parseFloat(row.getValue("phone"));
+      return <div className="text-center font-medium">{phone}</div>;
     },
-
   },
   {
     header: " ",
@@ -205,20 +116,20 @@ export const columns: ColumnDef<Payment>[] = [
       </div>
     ),
   },
-  
-]
+];
 
 export default function User() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+  const [users, setUsers] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
-    data,
+    data: users,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -234,38 +145,54 @@ export default function User() {
       columnVisibility,
       rowSelection,
     },
-  })
- 
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAllUser();
+        console.log(data)
+        setUsers(data.users);
+        setLoading(false);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to fetch users");
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
   return (
-    <div className="w-full ">
+    <div className="w-full">
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter name or email ..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("fullName")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn("fullName")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-        
       </div>
       <div className="rounded-md border w-[58rem]">
-        <Table >
-          <TableHeader className="text-xl"  >
+        <Table>
+          <TableHeader className="text-xl">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
@@ -300,25 +227,23 @@ export default function User() {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          Next
+        </Button>
       </div>
     </div>
-  )
+  );
 }
