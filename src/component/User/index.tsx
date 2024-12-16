@@ -41,14 +41,24 @@ import {
 } from "@/components/ui/table"
 import { MdDelete } from "react-icons/md";
 
-import { getAllUser } from "@/services/user";
+import { deleteUser, getAllUser } from "@/services/user";
 
 export type Payment = {
-  id: string;
-  name: string;
+  _id: string;
+  fullName: string;
   phone: number;
   email: string;
   address: string;
+};
+
+const handleDelete = async (id: string) => {
+  try {
+    console.log(id)
+    await deleteUser(id);
+    window.location.reload();
+  } catch (err) {
+    console.error("Error deleting user:", err);
+  }
 };
 
 export const columns: ColumnDef<Payment>[] = [
@@ -92,6 +102,8 @@ export const columns: ColumnDef<Payment>[] = [
   {
     header: " ",
     cell: ({ row }) => (
+  
+
       <div className="capitalize">
           
            <AlertDialog>
@@ -108,7 +120,7 @@ export const columns: ColumnDef<Payment>[] = [
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction className="bg-red-600">Continue</AlertDialogAction>
+            <AlertDialogAction className="bg-red-600" onClick={()=>handleDelete(row.original._id)}>Continue</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -146,13 +158,17 @@ export default function User() {
       rowSelection,
     },
   });
+ 
+  
 
+  
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await getAllUser();
         console.log(data)
-        setUsers(data.users);
+        setUsers(data?.users);
         setLoading(false);
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Failed to fetch users");
@@ -170,7 +186,7 @@ export default function User() {
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter name or email ..."
+          placeholder="Filter name  ..."
           value={(table.getColumn("fullName")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("fullName")?.setFilterValue(event.target.value)
