@@ -1,5 +1,5 @@
 import axios from "axios"
-import { Payment } from "@/component/User"
+
 
 
 export const getAllUser= async()=>{

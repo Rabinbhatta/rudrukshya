@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+import { ArrowUpDown } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -65,7 +65,7 @@ export const columns: ColumnDef<Payment>[] = [
   {
     accessorKey: "fullName",
     header: ({ column }) => (
-      <div>
+      <div className=" capitalize text-center ml-5">
         Name
         <Button
           variant="ghost"
@@ -75,36 +75,21 @@ export const columns: ColumnDef<Payment>[] = [
         </Button>
       </div>
     ),
-    cell: ({ row }) => <div>{row.getValue("fullName")}</div>,
+    cell: ({ row }) => <div className=" capitalize text-center">{row.getValue("fullName")}</div>,
   },
   {
     accessorKey: "email",
     header: "Email",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("email")}</div>
+      <div className="capitalize text-center">{row.getValue("email")}</div>
     ),
   },
   {
-    accessorKey: "address",
-    header: "Address",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("address")}</div>
-    ),
-  },
-  {
-    accessorKey: "phone",
-    header: () => <div className="text-center">Phone number</div>,
-    cell: ({ row }) => {
-      const phone = parseFloat(row.getValue("phone"));
-      return <div className="text-center font-medium">{phone}</div>;
-    },
-  },
-  {
-    header: " ",
+    header: "Action",
     cell: ({ row }) => (
   
 
-      <div className="capitalize">
+      <div className="capitalize text-center">
           
            <AlertDialog>
         <AlertDialogTrigger asChild>
@@ -194,13 +179,13 @@ export default function User() {
           className="max-w-sm"
         />
       </div>
-      <div className="rounded-md border w-[58rem]">
+      <div className="rounded-md border w-[45rem]">
         <Table>
-          <TableHeader className="text-xl">
+          <TableHeader className="text-xl text-center">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead className="text-xl text-center"  key={header.id}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(

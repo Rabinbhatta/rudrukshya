@@ -19,12 +19,12 @@ const items = [
     icon: Home,
   },
   {
-    title: "Inbox",
-    url: "/inbox",
+    title: "Queries",
+    url: "/querie",
     icon: Inbox,
   },
   {
-    title: "Product",
+    title: "Products",
     url: "/products",
     icon: ShoppingBag,
   },
