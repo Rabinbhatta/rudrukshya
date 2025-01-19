@@ -40,4 +40,17 @@ export const getAllProduct= async(page:number,limit:number)=>{
                 }
             }
             }
+
+            export const singleProduct= async(id:string)=>{
+                try {
+                    const res = await axios.get(`http://localhost:8000/get/product/${id}`)
+                    return res.data;
+                } catch (err:unknown) {
+                    if (axios.isAxiosError(err)) {
+                        throw new Error(err.message);
+                    } else {
+                        throw new Error("An unexpected error occurred");
+                    }
+                }
+                }
     

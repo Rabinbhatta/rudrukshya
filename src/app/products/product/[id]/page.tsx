@@ -1,9 +1,12 @@
 import Product from '@/component/products/product'
-import React from 'react'
+import * as React from 'react'
 
-const page = () => {
+
+const page = ({ params }:{params:{id:string}}) => {
   return (
-    <div><Product/></div>
+    <div>
+    <Product id={params.id}/>
+  </div>
   )
 }
 
