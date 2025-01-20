@@ -32,7 +32,7 @@ const Review = () => {
      
   return (
     <div>
-        <div className='grid grid-cols-3 gap-4'>
+        <div className='grid grid-cols-3 gap-x-4 gap-y-9'>
 
 
             {reviews.map((review,index)=>{
