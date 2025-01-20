@@ -63,8 +63,8 @@ const Review = () => {
              </div>
 
                 </div>
-                <div className='mt-4 font-sans'>
-                    <h1>{review.userID.fullName}</h1>
+                <div className='mt-4 font-thin'>
+                    <h1 className="font-semibold">{review.userID.fullName}</h1>
                     <p className='mt-2'>{review.comment}</p>
 
                 </div>         

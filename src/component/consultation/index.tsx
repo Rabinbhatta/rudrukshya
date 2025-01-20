@@ -1,9 +1,9 @@
 import React from 'react'
 
-const Queries = () => {
+const Consultation = () => {
   return (
-    <div>Queries</div>
+    <div>Consultation</div>
   )
 }
 
-export default Queries
+export default Consultation
