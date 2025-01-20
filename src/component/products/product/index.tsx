@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import * as z from "zod"
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Input } from '@/components/ui/input';
+import { Input } from '@heroui/input';
 import { Button } from '@/components/ui/button';
 import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@heroui/dropdown";
 
@@ -39,7 +39,7 @@ interface Product{
     price:string,
     size:string,
     stock:string,
-    weight:string
+    weight:string,
 }
 
 interface props{
@@ -52,16 +52,29 @@ const Product: React.FC<props> = ({id}) => {
         register,
         handleSubmit,
         formState:{ errors },
-        reset
-     }=useForm<formFields>({
+        setValue
+     }=useForm<formFields>({defaultValues:{
+      title:""
+     },
         resolver:zodResolver(schema)
      })
      const fetchData = async(id:string)=>{
         try {
             const data = await singleProduct(id)
             setProduct(data.product)
-            reset(data.product)
             setSelectedKeys(data.product.country)
+            setValue("title", `${data.product.title}`);
+setValue("category", `${data.product.category}`);
+setValue("country", `${data.product.country}`);
+setValue("description", `${data.product.description}`);
+setValue("faces", `${data.product.faces}`);
+setValue("isSale", `${data.product.isSale}`);
+setValue("isSpecial", `${data.product.isSpecial}`);
+setValue("isTopSelling", `${data.product.isTopSelling}`);
+setValue("price", `${data.product.price}`);
+setValue("size", `${data.product.size}`);
+setValue("stock", `${data.product.stock}`);
+setValue("weight", `${data.product.weight}`);
         } catch (error) {
             console.log(error)
         }
@@ -89,7 +102,18 @@ const Product: React.FC<props> = ({id}) => {
         <div className='ml-28' >
             <h1 className='text-4xl'>{page?"Edit Product":"Add new Product"}</h1>
             <form onSubmit={handleSubmit(onSubmit)}>
-                  <Input {...register("title")}/>
+            <Input
+                    autoComplete="off"
+                    autoFocus
+                    label="Title"
+                    labelPlacement="outside"
+                    placeholder=' '
+                    classNames={{
+                        label: "!text-black",}}
+                    variant="bordered"
+                    radius="sm"
+                    {...register("title")}
+                    />
                   <Input {...register("category")}/>
                   <Input {...register("description")}/>
                   <Input {...register("faces")}/>

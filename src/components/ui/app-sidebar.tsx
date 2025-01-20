@@ -19,8 +19,8 @@ const items = [
     icon: Home,
   },
   {
-    title: "Queries",
-    url: "/querie",
+    title: "Consultation",
+    url: "/consultation",
     icon: Inbox,
   },
   {
@@ -34,8 +34,8 @@ const items = [
     icon: User,
   },
   {
-    title: "Settings",
-    url: "#",
+    title: "Review",
+    url: "/review",
     icon: Settings,
   },
 ]
