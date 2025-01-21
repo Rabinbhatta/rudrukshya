@@ -1,12 +1,9 @@
-module.exports = {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-        port: '', // Leave empty if no specific port is required
-        pathname: '/dscuqewel/image/upload/**', // Matches Cloudinary image paths
-      },
-    ],
-  },
+    domains: ["res.cloudinary.com","images.unsplash.com","images.pexels.com","cdn.dhanshreegems.com","st4.depositphotos.com","st3.depositphotos.com","miro.medium.com","cdn.pixabay.com","plus.unsplash.com"],
+  }
 };
+
+export default nextConfig;
