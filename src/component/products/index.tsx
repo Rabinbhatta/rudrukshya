@@ -73,19 +73,13 @@ export const columns: ColumnDef<Payment>[] = [
         accessorKey: "img",
         header: "Image",
         cell: ({ row }) => (
-          <div className="capitalize flex justify-center">
+          <div className="capitalize flex justify-center align-center w-20 h-20">
   <Image
     src={(row.getValue("img") as string[])[0]}
     alt="image"
     width={80}
     height={80}
-    style={{
-      objectFit: 'cover',
-      maxWidth: '100%',
-      maxHeight: '80px', // or a suitable max height
-      width: 'auto',
-      height: 'auto'
-    }}
+    className="rounded-md w-full h-full object-cover"
   />
 </div>
 
