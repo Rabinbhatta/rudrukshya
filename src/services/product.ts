@@ -56,3 +56,19 @@ export const singleProduct = async (id: string) => {
     }
   }
 };
+
+export const updateProduct = async (id: string, data: any) => {
+  try {
+    const res = await axios.patch(
+      `http://localhost:8000/product/update/${id}`,
+      data
+    );
+    return res.data;
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      throw new Error(err.message);
+    } else {
+      throw new Error("An unexpected error occurred");
+    }
+  }
+};

@@ -1,6 +1,10 @@
 "use client";
 // yo ho real code
-import { createProduct, singleProduct } from "@/services/product";
+import {
+  createProduct,
+  singleProduct,
+  updateProduct,
+} from "@/services/product";
 import React, { useState, useEffect } from "react";
 import * as z from "zod";
 import { SubmitHandler, useForm, Controller } from "react-hook-form";
@@ -25,8 +29,8 @@ interface Props {
 const schema = z.object({
   title: z.string().min(1, "*"),
   description: z.string().min(1, "*"),
-  faces: z.number({ message: "*" }).min(1, "*"),
-  weight: z.number({ message: "*" }).min(1, "*"),
+  faces: z.string().min(1, "*"),
+  weight: z.string().min(1, "*"),
   country: z.string().min(1, "*"),
   size: z.string().min(1, "*"),
   price: z.number({ message: "*" }).min(1, "*"),
@@ -52,7 +56,7 @@ const Demo: React.FC<Props> = ({ id }) => {
   } = useForm<formFields>({
     resolver: zodResolver(schema),
   });
-
+  const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [productImages, setProductImages] = useState<string[]>([]); // Manage images with useState
   const [selectImage, setSelectImage] = useState("");
@@ -83,6 +87,12 @@ const Demo: React.FC<Props> = ({ id }) => {
   };
 
   const handleRemoveImage = (indexToRemove: number) => {
+    const imageToRemove = productImages[indexToRemove];
+
+    if (imageToRemove.startsWith("http")) {
+      setRemovedImages((prev) => [...prev, imageToRemove]);
+    }
+
     const newImages = productImages.filter((_, i) => i !== indexToRemove);
     const newFiles = uploadedFiles.filter((_, i) => i !== indexToRemove);
 
@@ -102,6 +112,7 @@ const Demo: React.FC<Props> = ({ id }) => {
 
   const onSubmit: SubmitHandler<formFields> = async (data) => {
     try {
+      console.log(data);
       if (uploadedFiles.length === 0) {
         alert("Please upload at least one image");
         return;
@@ -119,21 +130,74 @@ const Demo: React.FC<Props> = ({ id }) => {
       });
 
       // Append image files
-      uploadedFiles.forEach((file) => {
-        formData.append("img", file);
-      });
 
-      const result = await createProduct(formData);
-      console.log(result);
-      productImages.forEach((url) => URL.revokeObjectURL(url));
+      if (!page) {
+        uploadedFiles.forEach((file) => {
+          formData.append("img", file);
+        });
+        const result = await createProduct(formData);
+        console.log(result);
+        productImages.forEach((url) => URL.revokeObjectURL(url));
+
+        return;
+      } else {
+        formData.append("removedImages", JSON.stringify(removedImages));
+        uploadedFiles.forEach((file) => {
+          formData.append("imgFile", file);
+        });
+        const result = await updateProduct(id, formData);
+        console.log(result);
+        productImages.forEach((url) => URL.revokeObjectURL(url));
+        return;
+      }
     } catch (error) {
       console.error("Upload failed:", error);
+    }
+  };
+
+  const fetchProduct = async (id: string) => {
+    try {
+      const data = await singleProduct(id);
+      setValue("title", data.product.title);
+      setValue("category", data.product.category);
+      setValue("country", data.product.country);
+      setValue("description", data.product.description);
+      setValue("faces", data.product.faces);
+
+      setValue("price", data.product.price);
+      setValue("size", data.product.size);
+      setValue("stock", data.product.stock);
+      setValue("weight", data.product.weight);
+      setValue("img", data.product.img);
+      setProductImages(data.product.img);
+      setSelectImage(data.product.img[0]);
+      if (data.product.isSale) {
+        setValue("isSale", "True");
+      } else {
+        setValue("isSale", "False");
+      }
+      if (data.product.isSpecial) {
+        setValue("isSpecial", "True");
+      } else {
+        setValue("isSpecial", "False");
+      }
+      if (data.product.isTopSelling) {
+        setValue("isTopSelling", "True");
+      } else {
+        setValue("isTopSelling", "False");
+      }
+      console.log(data);
+    } catch (error) {
+      console.error("Fetch failed:", error);
     }
   };
 
   useEffect(() => {
     if (id === "new") {
       setPage(false);
+    } else {
+      setPage(true);
+      fetchProduct(id);
     }
   }, []);
   return (
