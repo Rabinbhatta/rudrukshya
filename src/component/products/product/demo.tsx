@@ -19,7 +19,6 @@ import {
 import Image from "next/image";
 import { SiTicktick } from "react-icons/si";
 import { CiCirclePlus } from "react-icons/ci";
-import { profile } from "console";
 import { IoCloseCircle } from "react-icons/io5";
 
 interface Props {
@@ -242,10 +241,10 @@ const Demo: React.FC<Props> = ({ id }) => {
 
               <div className="gap-2 flex flex-col">
                 <h1>Description</h1>
-                <div className="h-24">
+                <div className="h-fit">
                   <textarea
                     key="bordered"
-                    className="col-span-9 md:col-span-6 mb-6 md:mb-0 bg-[#EEEFEE] rounded-xl p-3 h-24 overflow-y-scroll resize-none scrollbar-hide w-full"
+                    className=" h-fit mb-6 md:mb-0 bg-[#EEEFEE] rounded-xl p-3  overflow-y-scroll resize-none scrollbar-hide w-full"
                     placeholder="Enter your description"
                     {...register("description")}
                   />
