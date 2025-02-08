@@ -220,7 +220,7 @@ const Demo: React.FC<Props> = ({ id }) => {
         </div>
         <div className="flex gap-6">
           <div className="flex flex-col gap-6">
-            <div className="w-[44rem] h-[30rem] bg-[#F8F9F8] rounded-2xl p-4 flex flex-col gap-3">
+            <div className="w-[44rem] h-fit bg-[#F8F9F8] rounded-2xl p-4 flex flex-col gap-3">
               <h1 className="text-2xl font-thin">General Information</h1>
               <div className="gap-2 flex flex-col h-fit">
                 <h1>Product Name</h1>
@@ -244,7 +244,7 @@ const Demo: React.FC<Props> = ({ id }) => {
                 <div className="h-fit">
                   <textarea
                     key="bordered"
-                    className=" h-fit mb-6 md:mb-0 bg-[#EEEFEE] rounded-xl p-3  overflow-y-scroll resize-none scrollbar-hide w-full"
+                    className=" h-auto mb-6 md:mb-0 bg-[#EEEFEE] rounded-xl p-3  scrollbar-hide w-full"
                     placeholder="Enter your description"
                     {...register("description")}
                   />
