@@ -1,10 +1,18 @@
-import Login from '@/component/login'
-import React from 'react'
+"use client";
+import Login from "@/component/login";
+import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const page = () => {
+const queryClient = new QueryClient();
+
+const Pages = () => {
   return (
-    <div><Login/></div>
-  )
-}
+    <div>
+      <QueryClientProvider client={queryClient}>
+        <Login />
+      </QueryClientProvider>
+    </div>
+  );
+};
 
-export default page
+export default Pages;

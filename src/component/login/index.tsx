@@ -1,17 +1,17 @@
 "use client";
-import Link from "next/link";
 import * as z from "zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
-
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn } from "next-auth/react";
 
 const registerSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z
     .string()
-    .min(6, { message: "Password must be at least 6 characters" }),
+    .min(5, { message: "Password must be at least 6 characters" }),
 });
 
 export type formfields = z.infer<typeof registerSchema>;
@@ -24,37 +24,37 @@ export default function Login() {
   } = useForm<formfields>({ resolver: zodResolver(registerSchema) });
   const router = useRouter();
 
-  // const { mutate: mutateLogin } = useMutation({
-  //   mutationFn: (data: formfields) =>
-  //     signIn("credentials", {
-  //       email: data.email,
-  //       password: data.password,
-  //       redirect: false,
-  //     }),
-  //   onSuccess: (response: any) => {
-  //     if (response?.error) {
-  //       console.log(response);
-  //       toast.error(response.error?.data?.message || "Invalid credentials");
-  //     } else {
-  //       // Handle successful login
-  //       toast.success("Login successful");
-  //       router.push("/");
-  //     }
-  //   },
-  //   onError: (error: any) => {
-  //     console.error(error);
-  //     toast.error("An unexpected error occurred.");
-  //   },
-  // });
+  const { mutate: mutateLogin } = useMutation({
+    mutationFn: (data: formfields) =>
+      signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      }),
+    onSuccess: (response: any) => {
+      if (response?.error) {
+        console.log(response);
+        toast.error(response.error?.data?.message || "Invalid credentials");
+      } else {
+        // Handle successful login
+        toast.success("Login successful");
+        router.push("/");
+      }
+    },
+    onError: (error: any) => {
+      console.error(error);
+      toast.error("An unexpected error occurred.");
+    },
+  });
 
   const onSubmit: SubmitHandler<formfields> = async (data) => {
-    // try {
-    //   if (data) {
-    //     mutateLogin(data);
-    //   }
-    // } catch (error) {
-    //   console.error(error);
-    // }
+    try {
+      if (data) {
+        mutateLogin(data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -99,12 +99,6 @@ export default function Login() {
             Login
           </button>
         </form>
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
-          <Link href="/register" className="text-blue-600 hover:underline">
-            Register here
-          </Link>
-        </p>
       </div>
     </div>
   );
