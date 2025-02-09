@@ -1,6 +1,6 @@
 "use client";
-import * as React from "react"
-import { useState,useEffect } from "react";
+import * as React from "react";
+import { useState, useEffect } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -12,25 +12,23 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { ArrowUpDown } from "lucide-react"
+} from "@tanstack/react-table";
+import { ArrowUpDown } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-  } from "@/components/ui/alert-dialog"
- 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
-
-import { Input } from "@/components/ui/input"
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -38,7 +36,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import { MdDelete } from "react-icons/md";
 
 import { deleteUser, getAllUser } from "@/services/user";
@@ -53,7 +51,7 @@ export type Payment = {
 
 const handleDelete = async (id: string) => {
   try {
-    console.log(id)
+    console.log(id);
     await deleteUser(id);
     window.location.reload();
   } catch (err) {
@@ -75,7 +73,9 @@ export const columns: ColumnDef<Payment>[] = [
         </Button>
       </div>
     ),
-    cell: ({ row }) => <div className=" capitalize text-center">{row.getValue("fullName")}</div>,
+    cell: ({ row }) => (
+      <div className=" capitalize text-center">{row.getValue("fullName")}</div>
+    ),
   },
   {
     accessorKey: "email",
@@ -87,29 +87,33 @@ export const columns: ColumnDef<Payment>[] = [
   {
     header: "Action",
     cell: ({ row }) => (
-  
-
       <div className="capitalize text-center">
-          
-           <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button variant="outline"><MdDelete className="text-red-600 ml-2 text-xl"/><h1 className="text-red-600 text-left">Delete</h1></Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              account and remove the data from your servers.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction className="bg-red-600" onClick={()=>handleDelete(row.original._id)}>Continue</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-           
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline">
+              <MdDelete className="text-red-600 ml-2 text-xl" />
+              <h1 className="text-red-600 text-left">Delete</h1>
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the
+                account and remove the data from your servers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-red-600"
+                onClick={() => handleDelete(row.original._id)}
+              >
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     ),
   },
@@ -119,7 +123,9 @@ export default function User() {
   const [users, setUsers] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [nextDisable, setNextDisable] = useState(false);
+  const [previousDisable, setPreviousDisable] = useState(true);
+  const [page, setPage] = useState(1);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -143,25 +149,33 @@ export default function User() {
       rowSelection,
     },
   });
- 
-  
 
-  
-  
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getAllUser();
-        console.log(data)
-        setUsers(data?.users);
-        setLoading(false);
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Failed to fetch users");
-        setLoading(false);
+  const fetchData = async (page: number, limit: number) => {
+    try {
+      const data = await getAllUser(page, limit);
+
+      setPage(data.currentPage);
+      if (data.currentPage === data.totalPages) {
+        setNextDisable(true);
+      } else {
+        setNextDisable(false);
       }
-    };
+      if (data.currentPage === 1) {
+        setPreviousDisable(true);
+      } else {
+        setPreviousDisable(false);
+      }
+      console.log(data);
+      setUsers(data?.users);
+      setLoading(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to fetch users");
+      setLoading(false);
+    }
+  };
 
-    fetchData();
+  useEffect(() => {
+    fetchData(page, 10);
   }, []);
 
   if (loading) return <div>Loading...</div>;
@@ -172,7 +186,9 @@ export default function User() {
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter name  ..."
-          value={(table.getColumn("fullName")?.getFilterValue() as string) ?? ""}
+          value={
+            (table.getColumn("fullName")?.getFilterValue() as string) ?? ""
+          }
           onChange={(event) =>
             table.getColumn("fullName")?.setFilterValue(event.target.value)
           }
@@ -185,7 +201,7 @@ export default function User() {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead className="text-xl text-center"  key={header.id}>
+                  <TableHead className="text-xl text-center" key={header.id}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -231,16 +247,16 @@ export default function User() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
+          onClick={() => fetchData(page - 1, 10)}
+          disabled={previousDisable}
         >
           Previous
         </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
+          onClick={() => fetchData(page + 1, 10)}
+          disabled={nextDisable}
         >
           Next
         </Button>

@@ -3,6 +3,7 @@ import { getReview } from "@/services/review";
 import React, { useEffect, useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
+import { reverse } from "dns";
 
 interface review {
   userID: {
@@ -18,14 +19,33 @@ interface review {
 
 const Review = () => {
   const [reviews, setReviews] = useState<Array<review>>([]);
+  const [nextDisable, setNextDisable] = useState(false);
+  const [previousDisable, setPreviousDisable] = useState(true);
+  const [page, setPage] = useState(1);
 
-  const fetchData = async () => {
-    const data = await getReview();
-    console.log(data);
-    setReviews(data.reviews);
+  const fetchData = async (page: number, limit: number) => {
+    try {
+      const data = await getReview(page, limit);
+      console.log(data);
+
+      setPage(data.currentPage);
+      if (data.currentPage === data.totalPages) {
+        setNextDisable(true);
+      } else {
+        setNextDisable(false);
+      }
+      if (data.currentPage === 1) {
+        setPreviousDisable(true);
+      } else {
+        setPreviousDisable(false);
+      }
+      console.log(data);
+      setReviews(data?.reviews);
+      console.log(reviews);
+    } catch (err: unknown) {}
   };
   useEffect(() => {
-    fetchData();
+    fetchData(page, 12);
   }, []);
 
   return (
@@ -78,11 +98,21 @@ const Review = () => {
           );
         })}
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4 mt-5">
-        <Button variant="outline" size="sm">
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => fetchData(page - 1, 12)}
+          disabled={previousDisable}
+        >
           Previous
         </Button>
-        <Button variant="outline" size="sm">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => fetchData(page + 1, 12)}
+          disabled={nextDisable}
+        >
           Next
         </Button>
       </div>
