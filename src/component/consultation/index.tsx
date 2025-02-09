@@ -4,10 +4,23 @@ import { MdOutlineEmail } from "react-icons/md";
 import { CiPhone } from "react-icons/ci";
 import { FaRegMessage } from "react-icons/fa6";
 import { useState, useEffect } from "react";
-import { getConsultation } from "@/services/consultation";
+import { deleteConsultation, getConsultation } from "@/services/consultation";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { MdClose } from "react-icons/md";
 
 interface Consultation {
+  _id: string;
   fullName: string;
   email: string;
   phone: string;
@@ -39,6 +52,12 @@ const Consultation = () => {
       setConsultations(data?.consultation);
     } catch (err: unknown) {}
   };
+  const handleDelete = async (id: string) => {
+    try {
+      const data = await deleteConsultation(id);
+      fetchData(page, 12);
+    } catch (error) {}
+  };
   useEffect(() => {
     fetchData(page, 12);
   }, []);
@@ -50,7 +69,7 @@ const Consultation = () => {
           return (
             <div
               key={index}
-              className="w-80 h-fit rounded-md bg-[#F2F7FB] p-6 flex flex-col gap-4"
+              className="w-80 h-fit rounded-md bg-[#F2F7FB] p-6 flex flex-col gap-4 relative"
             >
               <h1 className="font-bold">Request #{index}</h1>
               <div className="flex flex-col gap-1">
@@ -75,6 +94,36 @@ const Consultation = () => {
               <ul className="border" />
               <div>
                 <p>{consultation.date}</p>
+              </div>
+              <div className="mt-4 font-thin">
+                <div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <MdClose className="text-red-600 text-2xl absolute cursor-pointer right-0 top-0" />
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Are you absolutely sure?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently
+                          delete the review and remove the data from your
+                          servers.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-red-600"
+                          onClick={() => handleDelete(consultation._id)}
+                        >
+                          Continue
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
             </div>
           );

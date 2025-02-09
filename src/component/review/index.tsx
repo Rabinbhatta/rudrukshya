@@ -1,11 +1,24 @@
 "use client";
-import { getReview } from "@/services/review";
+import { deleteReview, getReview } from "@/services/review";
 import React, { useEffect, useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { reverse } from "dns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { MdClose, MdDelete } from "react-icons/md";
 
 interface review {
+  _id: string;
   userID: {
     fullName: string;
     _id: string;
@@ -44,6 +57,13 @@ const Review = () => {
       console.log(reviews);
     } catch (err: unknown) {}
   };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const data = await deleteReview(id);
+      fetchData(page, 12);
+    } catch (error) {}
+  };
   useEffect(() => {
     fetchData(page, 12);
   }, []);
@@ -60,7 +80,7 @@ const Review = () => {
           return (
             <div
               key={index}
-              className="w-80 h-fit rounded-md bg-[#F2F7FB] p-7 "
+              className="w-80 h-fit rounded-md bg-[#F2F7FB] p-7 relative"
             >
               <div className="flex justify-between text-center items-center">
                 <div className="bg-red-600 rounded-full w-9 h-9 overflow-hidden mr-6 ">
@@ -91,6 +111,34 @@ const Review = () => {
                 <div>{formattedDate}</div>
               </div>
               <div className="mt-4 font-thin">
+                <div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <MdClose className="text-red-600 text-2xl absolute cursor-pointer right-0 top-0" />
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Are you absolutely sure?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently
+                          delete the review and remove the data from your
+                          servers.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-red-600"
+                          onClick={() => handleDelete(review._id)}
+                        >
+                          Continue
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
                 <h1 className="font-semibold">{review.userID?.fullName}</h1>
                 <p className="mt-2">{review.comment}</p>
               </div>
