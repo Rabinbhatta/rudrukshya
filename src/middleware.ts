@@ -12,7 +12,6 @@ export async function middleware(request: NextRequest) {
 
   // Define protected routes
   const protectedRoutes = [
-    "/",
     "/dashboard",
     "/products",
     "/review",

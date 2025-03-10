@@ -38,7 +38,7 @@ export default function Login() {
       } else {
         // Handle successful login
         toast.success("Login successful");
-        router.push("/");
+        router.push("/dashboard");
       }
     },
     onError: (error: any) => {

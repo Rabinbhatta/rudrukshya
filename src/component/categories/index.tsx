@@ -168,8 +168,8 @@ export default function Categories() {
   const fetchData = async () => {
     try {
       const data = await getAllCategories();
-      setUsers(data[2].subCategories);
-      setUsers1(data[0].subCategories);
+      setUsers(data[1]?.subCategories);
+      setUsers1(data[0]?.subCategories);
       console.log(data[0]);
       setLoading(false);
     } catch (err: unknown) {
