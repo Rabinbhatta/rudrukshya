@@ -50,13 +50,17 @@ const Consultation = () => {
       }
       console.log(data);
       setConsultations(data?.consultation);
-    } catch (err: unknown) {}
+    } catch (err: unknown) {
+      console.log(err);
+    }
   };
   const handleDelete = async (id: string) => {
     try {
-      const data = await deleteConsultation(id);
+      await deleteConsultation(id);
       fetchData(page, 12);
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
   useEffect(() => {
     fetchData(page, 12);

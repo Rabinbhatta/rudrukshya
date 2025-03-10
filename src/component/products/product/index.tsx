@@ -465,6 +465,51 @@ const Demo: React.FC<Props> = ({ id }) => {
                 </div>
 
                 {/* Special Dropdown */}
+
+                <div className="gap-3 flex items-center ">
+                  <div className="text-center ">
+                    <h1>Exclusive</h1>
+                  </div>
+                  <div>
+                    <Controller
+                      name="isSale"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <Dropdown>
+                          <DropdownTrigger>
+                            <Button
+                              className={`capitalize w-24 h-16 bg-black ${
+                                errors.isSale ? "text-red-500" : " text-white"
+                              }  text-xl`}
+                              variant="bordered"
+                              {...field} // Register the field here
+                            >
+                              {field.value || "Select"}
+                            </Button>
+                          </DropdownTrigger>
+                          <DropdownMenu
+                            disallowEmptySelection
+                            aria-label="Sale selection"
+                            selectedKeys={new Set([field.value])}
+                            selectionMode="single"
+                            variant="flat"
+                            onSelectionChange={(keys) => {
+                              const selectedValue = Array.from(keys)[0];
+                              field.onChange(selectedValue); // Update form value
+                            }}
+                          >
+                            <DropdownItem key="true">True</DropdownItem>
+                            <DropdownItem key="false">False</DropdownItem>
+                          </DropdownMenu>
+                        </Dropdown>
+                      )}
+                    />
+                  </div>
+                  <ul className="border" />
+                </div>
+
+                {/* Special Dropdown */}
                 <div className="gap-3 flex items-center">
                   <div className="text-center">
                     <h1>Special</h1>

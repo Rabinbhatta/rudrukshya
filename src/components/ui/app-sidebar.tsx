@@ -1,4 +1,12 @@
-import { ShoppingBag, Home, Inbox, User, Settings, LogOut } from "lucide-react";
+import {
+  ShoppingBag,
+  Home,
+  Inbox,
+  User,
+  LogOut,
+  MessageCircle,
+  Boxes,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -38,7 +46,12 @@ const items = [
   {
     title: "Review",
     url: "/review",
-    icon: Settings,
+    icon: MessageCircle,
+  },
+  {
+    title: "Categories",
+    url: "/categories",
+    icon: Boxes,
   },
 ];
 

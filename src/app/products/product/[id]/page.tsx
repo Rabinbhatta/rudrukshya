@@ -1,5 +1,4 @@
 "use client";
-import Product from "@/component/products/product";
 import * as React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Demo from "@/component/products/product/demo";

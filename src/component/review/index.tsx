@@ -3,7 +3,6 @@ import { deleteReview, getReview } from "@/services/review";
 import React, { useEffect, useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
-import { reverse } from "dns";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +14,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { MdClose, MdDelete } from "react-icons/md";
+import { MdClose } from "react-icons/md";
+import Image from "next/image";
 
 interface review {
   _id: string;
@@ -55,14 +55,18 @@ const Review = () => {
       console.log(data);
       setReviews(data?.reviews);
       console.log(reviews);
-    } catch (err: unknown) {}
+    } catch (err: unknown) {
+      console.log(err);
+    }
   };
 
   const handleDelete = async (id: string) => {
     try {
-      const data = await deleteReview(id);
+      await deleteReview(id);
       fetchData(page, 12);
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
   useEffect(() => {
     fetchData(page, 12);
@@ -84,11 +88,13 @@ const Review = () => {
             >
               <div className="flex justify-between text-center items-center">
                 <div className="bg-red-600 rounded-full w-9 h-9 overflow-hidden mr-6 ">
-                  <img
-                    src={`https://ui-avatars.com/api/?name=${
+                  <Image
+                    width={100}
+                    height={100}
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
                       review?.userID?.fullName || "NA"
-                    }&background=E4C087&color=ffff`}
-                    alt=""
+                    )}&background=E4C087&color=FFFFFF`}
+                    alt="User Avatar"
                   />
                 </div>
 

@@ -21,9 +21,21 @@ import { SiTicktick } from "react-icons/si";
 import { CiCirclePlus } from "react-icons/ci";
 import { IoCloseCircle } from "react-icons/io5";
 import { toast } from "sonner";
+import { getAllCategories } from "@/services/categories";
 
 interface Props {
   id: string;
+}
+
+interface SubCategory {
+  name: string;
+  _id: string;
+}
+
+interface Category {
+  name: string;
+  subCategories: SubCategory[];
+  _id: string;
 }
 
 const schema = z.object({
@@ -33,12 +45,14 @@ const schema = z.object({
   weight: z.string().min(1, "*"),
   country: z.string().min(1, "*"),
   size: z.string().min(1, "*"),
-  price: z.number({ message: "*" }).min(1, "*"),
-  stock: z.number({ message: "*" }).min(1, "*"),
+  price: z.string({ message: "*" }).min(1, "*"),
+  stock: z.string({ message: "*" }).min(1, "*"),
   isSale: z.string().min(1, "*"),
   isSpecial: z.string().min(1, "*"),
+  isExclusive: z.string().min(1, "*"),
   isTopSelling: z.string().min(1, "*"),
   category: z.string().min(1, "*"),
+  subCategory: z.string().min(1, "*"),
   img: z.array(z.any()).min(1, "At least one image is required"), // Ensure at least one image
 });
 
@@ -53,6 +67,7 @@ const Demo: React.FC<Props> = ({ id }) => {
     formState: { errors },
     setValue,
     watch,
+    reset,
   } = useForm<formFields>({
     resolver: zodResolver(schema),
   });
@@ -60,9 +75,23 @@ const Demo: React.FC<Props> = ({ id }) => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [productImages, setProductImages] = useState<string[]>([]); // Manage images with useState
   const [selectImage, setSelectImage] = useState("");
+  const [subCategory, setSubCategory] = useState<Category[]>([]);
+  const [subCategoryOptions, setSubCategoryOptions] = useState<SubCategory[]>(
+    []
+  );
 
   // Watch the image field to handle the selected images
   const watchImages = watch("img", []);
+  const selectedCategory = watch("category");
+
+  useEffect(() => {
+    const foundCategory = subCategory.find(
+      (cat) => cat?.name === selectedCategory
+    );
+    if (foundCategory) {
+      setSubCategoryOptions(foundCategory ? foundCategory.subCategories : []);
+    }
+  }, [selectedCategory]);
 
   // Handle the image selection
   const handleSelectImage = (index: number) => {
@@ -136,7 +165,8 @@ const Demo: React.FC<Props> = ({ id }) => {
           formData.append("img", file);
         });
         const result = await createProduct(formData);
-        console.log(result);
+        toast.success("Product added successfully");
+        reset();
         productImages.forEach((url) => URL.revokeObjectURL(url));
 
         return;
@@ -146,7 +176,7 @@ const Demo: React.FC<Props> = ({ id }) => {
           formData.append("imgFile", file);
         });
         const result = await updateProduct(id, formData);
-        console.log(result);
+        toast.success("Product updated successfully");
         productImages.forEach((url) => URL.revokeObjectURL(url));
         return;
       }
@@ -176,6 +206,11 @@ const Demo: React.FC<Props> = ({ id }) => {
       } else {
         setValue("isSale", "False");
       }
+      if (data.product.isExclusive) {
+        setValue("isExclusive", "True");
+      } else {
+        setValue("isExclusive", "False");
+      }
       if (data.product.isSpecial) {
         setValue("isSpecial", "True");
       } else {
@@ -192,6 +227,16 @@ const Demo: React.FC<Props> = ({ id }) => {
     }
   };
 
+  const fetchSubCategory = async () => {
+    try {
+      const data = await getAllCategories();
+      setSubCategory(data);
+      console.log(data);
+    } catch (error) {
+      console.error("Fetch failed:", error);
+    }
+  };
+
   useEffect(() => {
     if (id === "new") {
       setPage(false);
@@ -199,6 +244,7 @@ const Demo: React.FC<Props> = ({ id }) => {
       setPage(true);
       fetchProduct(id);
     }
+    fetchSubCategory();
   }, []);
   return (
     <div className="ml-12 w-full">
@@ -419,9 +465,9 @@ const Demo: React.FC<Props> = ({ id }) => {
                   </div>
                 </div>
               </div>
-              <div className="gap-7 mt-1 justify-center flex ">
+              <div className="gap-3 mt-1 justify-center flex ">
                 {/* Sale Dropdown */}
-                <div className="gap-3 flex items-center ">
+                <div className="gap-2 flex items-center ">
                   <div className="text-center ">
                     <h1>Sale</h1>
                   </div>
@@ -464,8 +510,53 @@ const Demo: React.FC<Props> = ({ id }) => {
                   <ul className="border" />
                 </div>
 
+                <div className="gap-2 flex items-center ">
+                  <div className="text-center ">
+                    <h1>Exclusive</h1>
+                  </div>
+                  <div>
+                    <Controller
+                      name="isExclusive"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <Dropdown>
+                          <DropdownTrigger>
+                            <Button
+                              className={`capitalize w-24 h-16 bg-black ${
+                                errors.isExclusive
+                                  ? "text-red-500"
+                                  : " text-white"
+                              }  text-xl`}
+                              variant="bordered"
+                              {...field} // Register the field here
+                            >
+                              {field.value || "Select"}
+                            </Button>
+                          </DropdownTrigger>
+                          <DropdownMenu
+                            disallowEmptySelection
+                            aria-label="Exclusive selection"
+                            selectedKeys={new Set([field.value])}
+                            selectionMode="single"
+                            variant="flat"
+                            onSelectionChange={(keys) => {
+                              const selectedValue = Array.from(keys)[0];
+                              field.onChange(selectedValue); // Update form value
+                            }}
+                          >
+                            <DropdownItem key="true">True</DropdownItem>
+                            <DropdownItem key="false">False</DropdownItem>
+                          </DropdownMenu>
+                        </Dropdown>
+                      )}
+                    />
+                  </div>
+                  <ul className="border" />
+                </div>
+
                 {/* Special Dropdown */}
-                <div className="gap-3 flex items-center">
+                <div className="gap-2 flex items-center">
                   <div className="text-center">
                     <h1>Special</h1>
                   </div>
@@ -510,7 +601,7 @@ const Demo: React.FC<Props> = ({ id }) => {
                   <ul className="border" />
 
                   {/* Top Selling Dropdown */}
-                  <div className="gap-3 flex items-center">
+                  <div className="gap-2 flex items-center">
                     <div className="text-center">
                       <h1>Top Selling</h1>
                     </div>
@@ -635,43 +726,96 @@ const Demo: React.FC<Props> = ({ id }) => {
             </div>
             <div className="w-[28rem] h-[11rem] bg-[#F8F9F8] rounded-2xl p-4 flex flex-col gap-4">
               <h1 className="text-2xl font-thin">Category</h1>
-              <p>Product Category</p>
+              <div className="flex justify-around gap-6">
+                <div>
+                  <p>Product Category</p>
 
-              <Controller
-                name="category"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                  <Dropdown>
-                    <DropdownTrigger>
-                      <Button
-                        className={`capitalize w-24 h-16 bg-black ${
-                          errors.category ? "text-red-500" : " text-white"
-                        }  text-xl w-full`}
-                        variant="bordered"
-                        {...field} // Register the field here
-                      >
-                        {field.value || "Select"}
-                      </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu
-                      disallowEmptySelection
-                      aria-label="Category selection"
-                      selectedKeys={new Set([field.value])}
-                      selectionMode="single"
-                      variant="flat"
-                      onSelectionChange={(keys) => {
-                        const selectedValue = Array.from(keys)[0];
-                        field.onChange(selectedValue); // Update form value
-                      }}
-                    >
-                      <DropdownItem key="mala">Mala</DropdownItem>
-                      <DropdownItem key="Beads">Beads</DropdownItem>
-                      <DropdownItem key="bracelet">Bracelet</DropdownItem>
-                    </DropdownMenu>
-                  </Dropdown>
-                )}
-              />
+                  <Controller
+                    name="category"
+                    control={control}
+                    defaultValue=""
+                    render={({ field }) => (
+                      <Dropdown>
+                        <DropdownTrigger>
+                          <Button
+                            className={`capitalize w-[10rem] h-16 bg-black ${
+                              errors.category ? "text-red-500" : " text-white"
+                            }  text-xl `}
+                            variant="bordered"
+                            {...field} // Register the field here
+                          >
+                            {field.value || "Select"}
+                          </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu
+                          disallowEmptySelection
+                          aria-label="Category selection"
+                          selectedKeys={new Set([field.value])}
+                          selectionMode="single"
+                          variant="flat"
+                          onSelectionChange={(keys) => {
+                            const selectedValue = Array.from(keys)[0];
+                            field.onChange(selectedValue); // Update form value
+                          }}
+                        >
+                          <DropdownItem key="mala">Mala</DropdownItem>
+                          <DropdownItem key="Beads">Beads</DropdownItem>
+                          <DropdownItem key="bracelet">Bracelet</DropdownItem>
+                        </DropdownMenu>
+                      </Dropdown>
+                    )}
+                  />
+                </div>
+                <div>
+                  <p>Sub Category</p>
+
+                  <Controller
+                    name="subCategory"
+                    control={control}
+                    defaultValue=""
+                    render={({ field }) => (
+                      <Dropdown>
+                        <DropdownTrigger>
+                          <Button
+                            className={`capitalize w-[10rem] h-16 bg-black ${
+                              errors.subCategory
+                                ? "text-red-500"
+                                : " text-white"
+                            }  text-xl`}
+                            variant="bordered"
+                            {...field} // Register the field here
+                          >
+                            {field.value || "Select"}
+                          </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu
+                          disallowEmptySelection
+                          aria-label="Category selection"
+                          selectedKeys={new Set([field.value])}
+                          selectionMode="single"
+                          variant="flat"
+                          onSelectionChange={(keys) => {
+                            const selectedValue = Array.from(keys)[0];
+                            field.onChange(selectedValue); // Update form value
+                          }}
+                        >
+                          {subCategoryOptions.length > 0 ? (
+                            subCategoryOptions.map((sub) => (
+                              <DropdownItem key={sub.name}>
+                                {sub.name}
+                              </DropdownItem>
+                            ))
+                          ) : (
+                            <DropdownItem key="noSub">
+                              No Subcategories
+                            </DropdownItem>
+                          )}
+                        </DropdownMenu>
+                      </Dropdown>
+                    )}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

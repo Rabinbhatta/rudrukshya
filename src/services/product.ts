@@ -1,5 +1,4 @@
 import axios from "axios";
-import { formFields } from "@/component/products/product/demo";
 
 export const getAllProduct = async (page: number, limit: number) => {
   try {

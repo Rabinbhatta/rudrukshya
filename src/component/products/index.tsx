@@ -1,6 +1,6 @@
 "use client";
-import * as React from "react"
-import { useState,useEffect } from "react";
+import * as React from "react";
+import { useState, useEffect } from "react";
 import { MdOutlineModeEditOutline } from "react-icons/md";
 import {
   ColumnDef,
@@ -13,24 +13,24 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-  } from "@/components/ui/alert-dialog"
- 
-import { Input } from "@/components/ui/input"
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+import { Input } from "@/components/ui/input";
 
 import {
   Table,
@@ -39,15 +39,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import { MdDelete } from "react-icons/md";
 
-import { getAllProduct,deleteProduct,createProduct} from "@/services/product";
+import { getAllProduct, deleteProduct } from "@/services/product";
 import Image from "next/image";
 import { FaPlus } from "react-icons/fa";
-
-
-
 
 export type Payment = {
   _id?: string;
@@ -59,9 +56,8 @@ export type Payment = {
 
 const handleDelete = async (id: string | undefined) => {
   try {
-    console.log(id)
-    if(id)
-    await deleteProduct(id);
+    console.log(id);
+    if (id) await deleteProduct(id);
     window.location.reload();
   } catch (err) {
     console.error("Error deleting user:", err);
@@ -69,30 +65,27 @@ const handleDelete = async (id: string | undefined) => {
 };
 
 export const columns: ColumnDef<Payment>[] = [
-    {
-        accessorKey: "img",
-        header: "Image",
-        cell: ({ row }) => (
-          <div className="capitalize flex justify-center align-center w-20 h-20">
-  <Image
-    src={(row.getValue("img") as string[])[0]}
-    alt="image"
-    width={80}
-    height={80}
-    className="rounded-md w-full h-full object-cover"
-  />
-</div>
-
-        ),
-      },
   {
-    accessorKey: "title",
-    header: ({ column }) => (
-      <div className="capitalize text-center">
-        Title
+    accessorKey: "img",
+    header: "Image",
+    cell: ({ row }) => (
+      <div className="capitalize flex justify-center align-center w-20 h-20">
+        <Image
+          src={(row.getValue("img") as string[])[0]}
+          alt="image"
+          width={80}
+          height={80}
+          className="rounded-md w-full h-full object-cover"
+        />
       </div>
     ),
-    cell: ({ row }) => <div className="text-center">{row.getValue("title")}</div>,
+  },
+  {
+    accessorKey: "title",
+    header: ({}) => <div className="capitalize text-center">Title</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("title")}</div>
+    ),
   },
   {
     accessorKey: "price",
@@ -101,54 +94,58 @@ export const columns: ColumnDef<Payment>[] = [
       <div className="capitalize text-center">{row.getValue("price")}</div>
     ),
   },
- 
+
   {
     accessorKey: "category",
     header: "Category",
     cell: ({ row }) => (
       <div className="capitalize text-center">{row.getValue("category")}</div>
     ),
-    
   },
-  
+
   {
     header: "Action ",
     cell: ({ row }) => (
-         <div className="flex gap-5 justify-center">
-                  <div>
-                  <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline"><MdDelete className="text-red-600 text-xl"/><h1 className="text-red-600">Delete</h1></Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the
-                      account and remove the data from your servers.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction className="bg-red-600" onClick={()=>handleDelete(row.original._id)}>Continue</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-                  </div>
-                  <div>
-                    <Link href={`/products/product/${row.original._id}`} passHref>
-                    <Button variant="outline"><MdOutlineModeEditOutline className="text-xl "/><h1>Edit</h1></Button>
-                    </Link>
-                  
-
-          
-                  </div>
-                   
-                   
-              </div>
+      <div className="flex gap-5 justify-center">
+        <div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline">
+                <MdDelete className="text-red-600 text-xl" />
+                <h1 className="text-red-600">Delete</h1>
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  account and remove the data from your servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-red-600"
+                  onClick={() => handleDelete(row.original._id)}
+                >
+                  Continue
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+        <div>
+          <Link href={`/products/product/${row.original._id}`} passHref>
+            <Button variant="outline">
+              <MdOutlineModeEditOutline className="text-xl " />
+              <h1>Edit</h1>
+            </Button>
+          </Link>
+        </div>
+      </div>
     ),
   },
-  
 ];
 
 export default function Products() {
@@ -158,9 +155,9 @@ export default function Products() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const[page,setPage]=useState(1);
-  const[nextDisable,setNextDisable]=useState(false);
-  const [previousDisable,setPreviousDisable]=useState(true);
+  const [page, setPage] = useState(1);
+  const [nextDisable, setNextDisable] = useState(false);
+  const [previousDisable, setPreviousDisable] = useState(true);
   const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
@@ -181,23 +178,23 @@ export default function Products() {
       rowSelection,
     },
   });
-  
-  const fetchData = async (page:number,limit:number) => {
+
+  const fetchData = async (page: number, limit: number) => {
     try {
-      const data = await getAllProduct(page,limit);
-      
-      setPage(data.pagination.currentPage)
-      if(data.pagination.currentPage===data.pagination.totalPages){
-        setNextDisable(true)
-      }else{
-        setNextDisable(false)
+      const data = await getAllProduct(page, limit);
+
+      setPage(data.pagination.currentPage);
+      if (data.pagination.currentPage === data.pagination.totalPages) {
+        setNextDisable(true);
+      } else {
+        setNextDisable(false);
       }
-      if(data.pagination.currentPage===1){
-        setPreviousDisable(true)
-      }else{
-        setPreviousDisable(false)
+      if (data.pagination.currentPage === 1) {
+        setPreviousDisable(true);
+      } else {
+        setPreviousDisable(false);
       }
-      console.log(data)
+      console.log(data);
       setUsers(data?.products);
       setLoading(false);
     } catch (err: unknown) {
@@ -205,13 +202,9 @@ export default function Products() {
       setLoading(false);
     }
   };
- 
 
-  
   useEffect(() => {
-    
-
-    fetchData(1,8);
+    fetchData(1, 8);
   }, []);
 
   if (loading) return <div>Loading...</div>;
@@ -220,17 +213,21 @@ export default function Products() {
   return (
     <div className="w-full">
       <div className="flex items-center py-4 justify-between">
-              <Input
-                placeholder="Filter title  ..."
-                value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-                onChange={(event) =>
-                  table.getColumn("title")?.setFilterValue(event.target.value)
-                }
-                className="max-w-sm"
-              />
-              <Link href="/products/product/new" passHref>
-              <Button variant="outline" ><FaPlus className="text-xl text-green-600 "/><h1 className="text-green-600 text-lg">Add Product</h1></Button></Link>
-            </div>
+        <Input
+          placeholder="Filter title  ..."
+          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("title")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
+        <Link href="/products/product/new" passHref>
+          <Button variant="outline">
+            <FaPlus className="text-xl text-green-600 " />
+            <h1 className="text-green-600 text-lg">Add Product</h1>
+          </Button>
+        </Link>
+      </div>
       <div className="rounded-md border w-[65rem]  ">
         <Table>
           <TableHeader className="text-xl">
@@ -283,7 +280,7 @@ export default function Products() {
         <Button
           variant="outline"
           size="sm"
-          onClick={()=>fetchData(page-1,8)}
+          onClick={() => fetchData(page - 1, 8)}
           disabled={previousDisable}
         >
           Previous
@@ -291,7 +288,7 @@ export default function Products() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => fetchData(page+1,8)}
+          onClick={() => fetchData(page + 1, 8)}
           disabled={nextDisable}
         >
           Next
