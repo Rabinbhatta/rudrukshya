@@ -20,7 +20,7 @@ const authOptions: NextAuthOptions = {
         }
         try {
           const res = await axios.post(
-            `http://localhost:8000/auth/admin/login`,
+            `${process.env.NEXT_PUBLIC_BASE_URL}/auth/admin/login`,
             {
               email: credentials.email,
               password: credentials.password,

@@ -39,9 +39,9 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
-    "/products:path",
-    "/review:path",
-    "/services:path",
-    "/user:path",
+    "/products:path*",
+    "/review:path*",
+    "/services:path*",
+    "/user:path*",
   ], // Add your protected routes here
 };

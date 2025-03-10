@@ -2,7 +2,9 @@ import axios from "axios";
 
 export const getAllCategories = async () => {
   try {
-    const res = await axios.get(`http://localhost:8000/category/get`);
+    const res = await axios.get(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/category/get`
+    );
     return res.data;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
@@ -16,7 +18,7 @@ export const getAllCategories = async () => {
 export const createSubCategory = async (id: string, name: string) => {
   try {
     const res = await axios.post(
-      `http://localhost:8000/category/create/subCategory/${id}`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/category/create/subCategory/${id}`,
       { name: name }
     );
     return res.data;
@@ -32,7 +34,7 @@ export const createSubCategory = async (id: string, name: string) => {
 export const deleteSubCategory = async (id: string) => {
   try {
     const res = await axios.patch(
-      `http://localhost:8000/category/delete/${id}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/category/delete/${id}`
     );
     return res.data;
   } catch (err: unknown) {

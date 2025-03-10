@@ -3,7 +3,7 @@ import axios from "axios";
 export const getAllUser = async (page: number, limit: number) => {
   try {
     const res = await axios.get(
-      `http://localhost:8000/get/users/?page=${page}&limit=${limit}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/get/users/?page=${page}&limit=${limit}`
     );
     return res.data;
   } catch (err: unknown) {
@@ -18,7 +18,7 @@ export const getAllUser = async (page: number, limit: number) => {
 export const deleteUser = async (id: string) => {
   try {
     const res = await axios.delete(
-      `http://localhost:8000/auth/deleteUser/${id}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/auth/deleteUser/${id}`
     );
     return res.data;
   } catch (err: unknown) {

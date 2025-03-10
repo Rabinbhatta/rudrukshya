@@ -3,7 +3,7 @@ import axios from "axios";
 export const getReview = async (page: number, limit: number) => {
   try {
     const res = await axios.get(
-      `http://localhost:8000/review/get?page=${page}&limit=${limit}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/review/get?page=${page}&limit=${limit}`
     );
     return res.data;
   } catch (err: unknown) {
@@ -17,7 +17,9 @@ export const getReview = async (page: number, limit: number) => {
 
 export const deleteReview = async (id: string) => {
   try {
-    const res = await axios.delete(`http://localhost:8000/review/delete/${id}`);
+    const res = await axios.delete(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/review/delete/${id}`
+    );
     return res.data;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {

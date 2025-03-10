@@ -3,7 +3,7 @@ import axios from "axios";
 export const getAllProduct = async (page: number, limit: number) => {
   try {
     const res = await axios.get(
-      `http://localhost:8000/get/products?page=${page}&limit=${limit}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/get/products?page=${page}&limit=${limit}`
     );
     return res.data;
   } catch (err: unknown) {
@@ -18,7 +18,7 @@ export const getAllProduct = async (page: number, limit: number) => {
 export const deleteProduct = async (id: string) => {
   try {
     const res = await axios.delete(
-      `http://localhost:8000/product/delete/${id}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/product/delete/${id}`
     );
     return res.data;
   } catch (err: unknown) {
@@ -32,7 +32,10 @@ export const deleteProduct = async (id: string) => {
 
 export const createProduct = async (data: any) => {
   try {
-    const res = await axios.post(`http://localhost:8000/product/create`, data);
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/product/create`,
+      data
+    );
     return res.data;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
@@ -45,7 +48,9 @@ export const createProduct = async (data: any) => {
 
 export const singleProduct = async (id: string) => {
   try {
-    const res = await axios.get(`http://localhost:8000/get/product/${id}`);
+    const res = await axios.get(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/get/product/${id}`
+    );
     return res.data;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
@@ -59,7 +64,7 @@ export const singleProduct = async (id: string) => {
 export const updateProduct = async (id: string, data: any) => {
   try {
     const res = await axios.patch(
-      `http://localhost:8000/product/update/${id}`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/product/update/${id}`,
       data
     );
     return res.data;
