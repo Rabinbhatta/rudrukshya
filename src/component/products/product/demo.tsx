@@ -22,10 +22,7 @@ import { CiCirclePlus } from "react-icons/ci";
 import { IoCloseCircle } from "react-icons/io5";
 import { toast } from "sonner";
 import { getAllCategories } from "@/services/categories";
-
-interface Props {
-  id: string;
-}
+import { useParams } from "next/navigation";
 
 interface SubCategory {
   name: string;
@@ -58,8 +55,9 @@ const schema = z.object({
 
 export type formFields = z.infer<typeof schema>;
 
-const Demo: React.FC<Props> = ({ id }) => {
+const Demo: React.FC = () => {
   const [page, setPage] = useState(false);
+  const params = useParams<{ id: string }>();
   const {
     register,
     handleSubmit,
@@ -164,7 +162,7 @@ const Demo: React.FC<Props> = ({ id }) => {
         uploadedFiles.forEach((file) => {
           formData.append("img", file);
         });
-        const result = await createProduct(formData);
+        await createProduct(formData);
         toast.success("Product added successfully");
         reset();
         productImages.forEach((url) => URL.revokeObjectURL(url));
@@ -175,7 +173,7 @@ const Demo: React.FC<Props> = ({ id }) => {
         uploadedFiles.forEach((file) => {
           formData.append("imgFile", file);
         });
-        const result = await updateProduct(id, formData);
+        await updateProduct(params.id, formData);
         toast.success("Product updated successfully");
         productImages.forEach((url) => URL.revokeObjectURL(url));
         return;
@@ -238,11 +236,12 @@ const Demo: React.FC<Props> = ({ id }) => {
   };
 
   useEffect(() => {
-    if (id === "new") {
+    if (params.id === "new") {
       setPage(false);
     } else {
+      console.log(params);
       setPage(true);
-      fetchProduct(id);
+      fetchProduct(params.id);
     }
     fetchSubCategory();
   }, []);
