@@ -246,7 +246,7 @@ const Demo: React.FC = () => {
     fetchSubCategory();
   }, []);
   return (
-    <div className="ml-12 w-full">
+    <div className="w-full">
       <h1 className="text-4xl">{page ? "Edit Product" : "Add new Product"}</h1>
       <form
         className="mt-2 flex flex-col gap-6"

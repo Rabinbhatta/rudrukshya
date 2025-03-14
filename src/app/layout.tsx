@@ -1,10 +1,10 @@
 "use client";
 import { Geist, Geist_Mono } from "next/font/google";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/ui/app-sidebar";
 import { Toaster } from "sonner";
 import { usePathname } from "next/navigation";
 import "./globals.css";
+import { Container } from "@/HOC/Container";
+import { Sidebar } from "@/component/Sidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,13 +34,11 @@ export default function RootLayout({
         {isLoginPage ? (
           <main>{children}</main>
         ) : (
-          <SidebarProvider>
-            <AppSidebar />
-            <main>
-              <SidebarTrigger />
+          <Sidebar>
+            <Container>
               {children}
-            </main>
-          </SidebarProvider>
+            </Container>
+          </Sidebar>
         )}
       </body>
     </html>

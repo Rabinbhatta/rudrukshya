@@ -40,6 +40,7 @@ import {
 import { MdDelete } from "react-icons/md";
 
 import { deleteUser, getAllUser } from "@/services/user";
+import Loader from "../Loader";
 
 export type Payment = {
   _id: string;
@@ -178,7 +179,7 @@ export default function User() {
     fetchData(page, 10);
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Loader/>
   if (error) return <div>Error: {error}</div>;
 
   return (
