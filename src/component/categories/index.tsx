@@ -54,6 +54,8 @@ import {
   getAllCategories,
 } from "@/services/categories";
 import { FaPlus } from "react-icons/fa6";
+import { HiOutlineSearch } from "react-icons/hi";
+import Loader from "../Loader";
 
 export type Payment = {
   _id: string;
@@ -78,35 +80,35 @@ export const columns: ColumnDef<Payment>[] = [
     accessorKey: "name",
     header: "Sub Category",
     cell: ({ row }) => (
-      <div className="capitalize text-center">{row.getValue("name")}</div>
+      <div className="capitalize">{row.getValue("name")}</div>
     ),
   },
   {
     header: "Action",
     cell: ({ row }) => (
-      <div className="capitalize text-center">
+      <div className="flex justify-center">
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="outline">
-              <MdDelete className="text-red-600 ml-2 text-xl" />
-              <h1 className="text-red-600 text-left">Delete</h1>
+            <Button variant="ghost" className="h-9 w-9 p-0 text-red-500 hover:text-red-700 hover:bg-red-50">
+              <MdDelete className="h-5 w-5" />
+              <span className="sr-only">Delete</span>
             </Button>
           </AlertDialogTrigger>
-          <AlertDialogContent>
+          <AlertDialogContent className="bg-white">
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
                 This action cannot be undone. This will permanently delete the
-                account and remove the data from your servers.
+                category and remove the data from your servers.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel className="border border-gray-300">Cancel</AlertDialogCancel>
               <AlertDialogAction
-                className="bg-red-600"
+                className="bg-red-600 hover:bg-red-700"
                 onClick={() => handleDelete(row.original._id)}
               >
-                Continue
+                Delete
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -126,8 +128,10 @@ export default function Categories() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  const [searchMala, setSearchMala] = useState("");
+  const [searchBracelet, setSearchBracelet] = useState("");
 
-  const table = useReactTable({
+  const malaTable = useReactTable({
     data: users,
     columns,
     onSortingChange: setSorting,
@@ -146,7 +150,7 @@ export default function Categories() {
     },
   });
 
-  const table2 = useReactTable({
+  const braceletTable = useReactTable({
     data: users1,
     columns,
     onSortingChange: setSorting,
@@ -197,179 +201,286 @@ export default function Categories() {
     fetchData();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  useEffect(() => {
+    if (searchMala) {
+      malaTable.getColumn("name")?.setFilterValue(searchMala);
+    }
+  }, [searchMala, malaTable]);
+
+  useEffect(() => {
+    if (searchBracelet) {
+      braceletTable.getColumn("name")?.setFilterValue(searchBracelet);
+    }
+  }, [searchBracelet, braceletTable]);
+
+  if (loading) return <Loader />;
+  if (error) return (
+    <div className="flex items-center justify-center h-screen bg-red-50 text-red-500">
+      <div className="bg-white p-8 rounded-lg shadow-lg">
+        <h3 className="text-xl font-semibold mb-2">Error</h3>
+        <p>{error}</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="w-full flex justify-between">
-      <div className="w-full">
-        <div className="text-center mb-5">
-          <h1>Mala Categories</h1>
-        </div>
-        <div className="text-end mr-3 mb-1">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <FaPlus className="text-xl text-green-600" />
-                <div className="text-green-600 text-sm">Add new category</div>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Add Category</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Name
-                  </Label>
+    <div className="w-full bg-gray-50 p-6 min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Mala Categories Section */}
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-primaryColor/90 p-4">
+              <h2 className="text-xl font-semibold text-white">Mala Categories</h2>
+            </div>
+            
+            <div className="p-4">
+              <div className="flex justify-between items-center mb-4">
+                <div className="relative w-64">
+                  <HiOutlineSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <Input
-                    id="name"
-                    onChange={(e) => setName(e.target.value)}
-                    className="col-span-3"
+                    placeholder="Search categories..."
+                    value={searchMala}
+                    onChange={(e) => setSearchMala(e.target.value)}
+                    className="pl-10 py-2"
                   />
                 </div>
+                
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="bg-primaryColor hover:bg-primaryColor/90  text-white">
+                      <FaPlus className="mr-2 h-4 w-4" />
+                      Add Category
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px] bg-white">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-semibold">Add New Mala Category</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="mala-name" className="text-right font-medium">
+                          Category Name
+                        </Label>
+                        <Input
+                          id="mala-name"
+                          placeholder="Enter category name"
+                          onChange={(e) => setName(e.target.value)}
+                          className="col-span-3"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button 
+                        type="submit" 
+                        className="bg-primaryColor hover:bg-primaryColor/90"
+                        onClick={() => handleAddCategory("Mala")}
+                      >
+                        Save Category
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
-              <DialogFooter>
-                <Button type="submit" onClick={() => handleAddCategory("Mala")}>
-                  Save changes
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-        <div className="rounded-md border w-[33rem]">
-          <Table>
-            <TableHeader className="text-xl text-center">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead className="text-xl text-center" key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
+              
+              <div className="rounded-md border border-gray-200">
+                <Table>
+                  <TableHeader>
+                    {malaTable.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id} className="bg-gray-50">
+                        {headerGroup.headers.map((header) => (
+                          <TableHead className="text-center font-semibold" key={header.id}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </TableHead>
+                        ))}
+                      </TableRow>
                     ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-      <div className="w-full">
-        <div className="text-center mb-5">
-          <h1>Bracelet Categories</h1>
-        </div>
-        <div className="text-end mr-3 mb-1">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <FaPlus className="text-xl text-green-600" />
-                <div className="text-green-600 text-sm">Add new category</div>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Add Category</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Name
-                  </Label>
+                  </TableHeader>
+                  <TableBody>
+                    {malaTable.getRowModel().rows?.length ? (
+                      malaTable.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          data-state={row.getIsSelected() && "selected"}
+                          className="hover:bg-gray-50"
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id} className="text-center">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={columns.length}
+                          className="h-24 text-center text-gray-500"
+                        >
+                          No categories found.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              <div className="flex items-center justify-end space-x-2 py-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => malaTable.previousPage()}
+                  disabled={!malaTable.getCanPreviousPage()}
+                  className="border-gray-300"
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => malaTable.nextPage()}
+                  disabled={!malaTable.getCanNextPage()}
+                  className="border-gray-300"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Bracelet Categories Section */}
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-primaryColor/90 p-4">
+              <h2 className="text-xl font-semibold text-white">Bracelet Categories</h2>
+            </div>
+            
+            <div className="p-4">
+              <div className="flex justify-between items-center mb-4">
+                <div className="relative w-64">
+                  <HiOutlineSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <Input
-                    id="name"
-                    onChange={(e) => setName(e.target.value)}
-                    className="col-span-3"
+                    placeholder="Search categories..."
+                    value={searchBracelet}
+                    onChange={(e) => setSearchBracelet(e.target.value)}
+                    className="pl-10 py-2"
                   />
                 </div>
+                
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="bg-primaryColor hover:bg-primaryColor/90 text-white">
+                      <FaPlus className="mr-2 h-4 w-4" />
+                      Add Category
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px] bg-white">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-semibold">Add New Bracelet Category</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="bracelet-name" className="text-right font-medium">
+                          Category Name
+                        </Label>
+                        <Input
+                          id="bracelet-name"
+                          placeholder="Enter category name"
+                          onChange={(e) => setName(e.target.value)}
+                          className="col-span-3"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button 
+                        onClick={() => handleAddCategory("Bracelet")}
+                        className="bg-primaryColor hover:bg-primaryColor/90"
+                      >
+                        Save Category
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
-              <DialogFooter>
-                <Button onClick={() => handleAddCategory("Bracelet")}>
-                  Add Category
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-        <div className="rounded-md border w-[33rem]">
-          <Table>
-            <TableHeader className="text-xl text-center">
-              {table2.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead className="text-xl text-center" key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table2.getRowModel().rows?.length ? (
-                table2.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
+              
+              <div className="rounded-md border border-gray-200">
+                <Table>
+                  <TableHeader>
+                    {braceletTable.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id} className="bg-gray-50">
+                        {headerGroup.headers.map((header) => (
+                          <TableHead className="text-center font-semibold" key={header.id}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </TableHead>
+                        ))}
+                      </TableRow>
                     ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {braceletTable.getRowModel().rows?.length ? (
+                      braceletTable.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          data-state={row.getIsSelected() && "selected"}
+                          className="hover:bg-gray-50"
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id} className="text-center">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={columns.length}
+                          className="h-24 text-center text-gray-500"
+                        >
+                          No categories found.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              <div className="flex items-center justify-end space-x-2 py-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => braceletTable.previousPage()}
+                  disabled={!braceletTable.getCanPreviousPage()}
+                  className="border-gray-300"
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => braceletTable.nextPage()}
+                  disabled={!braceletTable.getCanNextPage()}
+                  className="border-gray-300"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
