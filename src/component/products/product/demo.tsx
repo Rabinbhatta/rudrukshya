@@ -1,5 +1,5 @@
 "use client";
-// yo ho real code
+
 import {
   createProduct,
   singleProduct,
@@ -23,6 +23,7 @@ import { IoCloseCircle } from "react-icons/io5";
 import { toast } from "sonner";
 import { getAllCategories } from "@/services/categories";
 import { useParams } from "next/navigation";
+import { josefin } from "@/utils/font";
 
 interface SubCategory {
   name: string;
@@ -50,13 +51,13 @@ const schema = z.object({
   isTopSelling: z.string().min(1, "*"),
   category: z.string().min(1, "*"),
   subCategory: z.string().min(1, "*"),
-  img: z.array(z.any()).min(1, "At least one image is required"), // Ensure at least one image
+  img: z.array(z.any()).min(1, "At least one image is required"),
 });
 
 export type formFields = z.infer<typeof schema>;
 
 const Demo: React.FC = () => {
-  const [page, setPage] = useState(false);
+  const [page, setPage] = useState<boolean>(false);
   const params = useParams<{ id: string }>();
   const {
     register,
@@ -71,39 +72,45 @@ const Demo: React.FC = () => {
   });
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [productImages, setProductImages] = useState<string[]>([]); // Manage images with useState
-  const [selectImage, setSelectImage] = useState("");
+  const [productImages, setProductImages] = useState<string[]>([]);
+  const [selectImage, setSelectImage] = useState<string>("");
   const [subCategory, setSubCategory] = useState<Category[]>([]);
-  const [subCategoryOptions, setSubCategoryOptions] = useState<SubCategory[]>(
-    []
-  );
+  const [subCategoryOptions, setSubCategoryOptions] = useState<SubCategory[]>([]);
 
   // Watch the image field to handle the selected images
   const watchImages = watch("img", []);
   const selectedCategory = watch("category");
 
   useEffect(() => {
+    // Reset subcategory value when category changes
+    setValue("subCategory", "");
+    
     const foundCategory = subCategory.find(
       (cat) => cat?.name === selectedCategory
     );
     if (foundCategory) {
       setSubCategoryOptions(foundCategory ? foundCategory.subCategories : []);
+    } else {
+      setSubCategoryOptions([]);
     }
-  }, [selectedCategory]);
+    
+    console.log("Category changed to:", selectedCategory);
+    console.log("Found category:", foundCategory);
+  }, [selectedCategory, subCategory, setValue]);
 
   // Handle the image selection
-  const handleSelectImage = (index: number) => {
+  const handleSelectImage = (index: number): void => {
     setSelectImage(watchImages[index]);
   };
 
   // Handle image upload
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>): void => {
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
       const fileUrls = files.map((file) => URL.createObjectURL(file));
 
       if (productImages.length + files.length > 4) {
-        alert("You can only upload a maximum of 4 images.");
+        toast.error("You can only upload a maximum of 4 images.");
         return;
       }
 
@@ -113,7 +120,7 @@ const Demo: React.FC = () => {
     }
   };
 
-  const handleRemoveImage = (indexToRemove: number) => {
+  const handleRemoveImage = (indexToRemove: number): void => {
     const imageToRemove = productImages[indexToRemove];
 
     if (imageToRemove.startsWith("http")) {
@@ -140,8 +147,8 @@ const Demo: React.FC = () => {
   const onSubmit: SubmitHandler<formFields> = async (data) => {
     try {
       console.log(data);
-      if (uploadedFiles.length === 0) {
-        alert("Please upload at least one image");
+      if (uploadedFiles.length === 0 && productImages.length === 0) {
+        toast.error("Please upload at least one image");
         return;
       }
 
@@ -157,7 +164,6 @@ const Demo: React.FC = () => {
       });
 
       // Append image files
-
       if (!page) {
         uploadedFiles.forEach((file) => {
           formData.append("img", file);
@@ -180,10 +186,11 @@ const Demo: React.FC = () => {
       }
     } catch (error) {
       console.error("Upload failed:", error);
+      toast.error("Failed to save product");
     }
   };
 
-  const fetchProduct = async (id: string) => {
+  const fetchProduct = async (id: string): Promise<void> => {
     try {
       const data = await singleProduct(id);
       setValue("title", data.product.title);
@@ -191,7 +198,6 @@ const Demo: React.FC = () => {
       setValue("country", data.product.country);
       setValue("description", data.product.description);
       setValue("faces", data.product.faces);
-
       setValue("price", data.product.price);
       setValue("size", data.product.size);
       setValue("stock", data.product.stock);
@@ -199,37 +205,34 @@ const Demo: React.FC = () => {
       setValue("img", data.product.img);
       setProductImages(data.product.img);
       setSelectImage(data.product.img[0]);
-      if (data.product.isSale) {
-        setValue("isSale", "True");
-      } else {
-        setValue("isSale", "False");
-      }
-      if (data.product.isExclusive) {
-        setValue("isExclusive", "True");
-      } else {
-        setValue("isExclusive", "False");
-      }
-      if (data.product.isSpecial) {
-        setValue("isSpecial", "True");
-      } else {
-        setValue("isSpecial", "False");
-      }
-      if (data.product.isTopSelling) {
-        setValue("isTopSelling", "True");
-      } else {
-        setValue("isTopSelling", "False");
-      }
+      
+      // Set boolean fields
+      setValue("isSale", data.product.isSale ? "True" : "False");
+      setValue("isExclusive", data.product.isExclusive ? "True" : "False");
+      setValue("isSpecial", data.product.isSpecial ? "True" : "False");
+      setValue("isTopSelling", data.product.isTopSelling ? "True" : "False");
+      
       console.log(data);
     } catch (error) {
       console.error("Fetch failed:", error);
+      toast.error("Failed to fetch product data");
     }
   };
 
-  const fetchSubCategory = async () => {
+  const fetchSubCategory = async (): Promise<void> => {
     try {
       const data = await getAllCategories();
       setSubCategory(data);
-      console.log(data);
+      console.log("Fetched categories:", data);
+      
+      // If category is already selected, update subcategory options
+      if (selectedCategory) {
+        const foundCategory = data.find((cat:any) => cat.name === selectedCategory);
+        if (foundCategory) {
+          setSubCategoryOptions(foundCategory.subCategories);
+          console.log("Setting subcategories for", selectedCategory, foundCategory.subCategories);
+        }
+      }
     } catch (error) {
       console.error("Fetch failed:", error);
     }
@@ -244,106 +247,106 @@ const Demo: React.FC = () => {
       fetchProduct(params.id);
     }
     fetchSubCategory();
-  }, []);
-  return (
-    <div className="w-full">
-      <h1 className="text-4xl">{page ? "Edit Product" : "Add new Product"}</h1>
-      <form
-        className="mt-2 flex flex-col gap-6"
-        onSubmit={handleSubmit(onSubmit)}
-      >
-        <div className="flex justify-end -mt-10 mr-14">
-          <Button className="bg-black text-white" type="submit">
-            {page ? (
-              "Edit Product"
-            ) : (
-              <p className="flex gap-1 items-center">
-                <SiTicktick />
-                Add new Product
-              </p>
-            )}
-          </Button>
-        </div>
-        <div className="flex gap-6">
-          <div className="flex flex-col gap-6">
-            <div className="w-[44rem] h-fit bg-[#F8F9F8] rounded-2xl p-4 flex flex-col gap-3">
-              <h1 className="text-2xl font-thin">General Information</h1>
-              <div className="gap-2 flex flex-col h-fit">
-                <h1>Product Name</h1>
-                <div className="h-12">
-                  <input
-                    key="outside"
-                    placeholder="Enter your product name"
-                    className="bg-[#EEEFEE] w-full h-12 p-3 rounded-xl"
-                    {...register("title")}
-                  />
-                  {errors.title && (
-                    <p className="text-red-500 relative top-[-5.6rem] left-[6.4rem] text-3xl ">
-                      {errors.title.message}
-                    </p>
-                  )}
-                </div>
-              </div>
+  }, [params]);
 
-              <div className="gap-2 flex flex-col">
-                <h1>Description</h1>
-                <div className="h-fit">
-                  <textarea
-                    key="bordered"
-                    className=" h-auto mb-6 md:mb-0 bg-[#EEEFEE] rounded-xl p-3  scrollbar-hide w-full"
-                    placeholder="Enter your description"
-                    {...register("description")}
-                  />
-                  {errors.description && (
-                    <p className="text-red-500 relative top-[-9rem] left-[5rem] text-3xl ">
-                      {errors.description.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="flex justify-between">
-                <div className="gap-2 flex flex-col">
-                  <div className="gap-2 flex flex-col">
-                    <h1>Faces</h1>
-                    <div className="h-12">
+  return (
+    <div className="w-full max-w-7xl mx-auto px-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className={`text-3xl font-bold text-gray-800 ${josefin.className} text-primaryColor` }>
+          {page ? "Edit Product" : "Add New Product"}
+        </h1>
+        <Button 
+          className="bg-primaryColor text-white rounded-xl hover:bg-primaryColor/90 transition-colors"
+          type="submit"
+          onPress={()=>handleSubmit(onSubmit)}
+        >
+          <div className="flex items-center gap-2">
+            {page ? null : <SiTicktick className="h-4 w-4" />}
+            {page ? "Save Changes" : "Add Product"}
+          </div>
+        </Button>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left column - General Information */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white rounded-xl shadow-sm">
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-700 mb-4">General Information</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                      Product Name
+                    </label>
+                    <input
+                      id="title"
+                      placeholder="Enter your product name"
+                      className={`bg-[#EEEFEE] w-full h-12 p-3 rounded-xl ${errors.title ? "border-2 border-red-500" : ""}`}
+                      {...register("title")}
+                    />
+                    {errors.title && (
+                      <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      id="description"
+                      placeholder="Enter your product description"
+                      className={`h-auto mb-6 md:mb-0 bg-[#EEEFEE] rounded-xl p-3 scrollbar-hide w-full ${
+                        errors.description ? "border-2 border-red-500" : ""
+                      }`}
+                      rows={3}
+                      {...register("description")}
+                    />
+                    {errors.description && (
+                      <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="faces" className="block text-sm font-medium text-gray-700 mb-1">
+                        Faces
+                      </label>
                       <input
-                        key="outside"
-                        placeholder="Enter  product face"
+                        id="faces"
                         type="number"
-                        className="bg-[#EEEFEE] h-12 p-3 w-[25rem] rounded-xl"
+                        placeholder="Enter product faces"
+                        className={`bg-[#EEEFEE] h-12 p-3 w-full rounded-xl ${
+                          errors.faces ? "border-2 border-red-500" : ""
+                        }`}
                         {...register("faces")}
                       />
                       {errors.faces && (
-                        <p className="text-red-500 relative top-[-5.7rem] left-[2.6rem] text-3xl ">
-                          {errors.faces.message}
-                        </p>
+                        <p className="text-red-500 text-sm mt-1">{errors.faces.message}</p>
                       )}
                     </div>
-                  </div>
-                  <div className="gap-2 flex flex-col">
-                    <h1>Weight</h1>
-                    <div className="h-12">
+                    <div>
+                      <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-1">
+                        Weight
+                      </label>
                       <input
-                        key="outside"
-                        placeholder="Enter  product weight"
-                        className="bg-[#EEEFEE] h-12 p-3 rounded-xl  w-full"
+                        id="weight"
+                        placeholder="Enter product weight"
+                        className={`bg-[#EEEFEE] h-12 p-3 w-full rounded-xl ${
+                          errors.weight ? "border-2 border-red-500" : ""
+                        }`}
                         {...register("weight")}
                       />
                       {errors.weight && (
-                        <p className="text-red-500 relative top-[-5.6rem] left-[3.1rem] text-3xl ">
-                          {errors.weight.message}
-                        </p>
+                        <p className="text-red-500 text-sm mt-1">{errors.weight.message}</p>
                       )}
                     </div>
                   </div>
-                </div>
-                <div className="gap-7 flex items-center">
-                  <div className="gap-3 flex flex-col">
-                    <div className="text-center">
-                      <h1>Country</h1>
-                      <p className="text-[12px]">Pick a country</p>
-                    </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
+                      <div className="text-sm font-medium text-gray-700 mb-1">Country</div>
                       <Controller
                         name="country"
                         control={control}
@@ -352,19 +355,17 @@ const Demo: React.FC = () => {
                           <Dropdown>
                             <DropdownTrigger>
                               <Button
-                                className={`capitalize w-24 h-16 bg-black ${
-                                  errors.country
-                                    ? "text-red-500"
-                                    : " text-white"
-                                }  text-xl`}
+                                className={`capitalize w-full h-12 bg-primaryColor ${
+                                  errors.country ? "border-2 border-red-500" : ""
+                                } text-white text-base`}
                                 variant="bordered"
                               >
-                                {field.value || "Select"}
+                                {field.value || "Select Country"}
                               </Button>
                             </DropdownTrigger>
                             <DropdownMenu
                               disallowEmptySelection
-                              aria-label="Single selection example"
+                              aria-label="Country selection"
                               selectedKeys={new Set([field.value])}
                               selectionMode="single"
                               variant="flat"
@@ -374,21 +375,17 @@ const Demo: React.FC = () => {
                               }}
                             >
                               <DropdownItem key="nepal">Nepal</DropdownItem>
-                              <DropdownItem key="indonesia">
-                                Indonesia
-                              </DropdownItem>
+                              <DropdownItem key="indonesia">Indonesia</DropdownItem>
                             </DropdownMenu>
                           </Dropdown>
                         )}
                       />
-                    </div>
-                  </div>
-                  <div className="gap-3 flex flex-col">
-                    <div className="text-center">
-                      <h1>Size</h1>
-                      <p className="text-[12px]">Pick a size</p>
+                      {errors.country && (
+                        <p className="text-red-500 text-sm mt-1">{errors.country.message}</p>
+                      )}
                     </div>
                     <div>
+                      <div className="text-sm font-medium text-gray-700 mb-1">Size</div>
                       <Controller
                         name="size"
                         control={control}
@@ -397,23 +394,23 @@ const Demo: React.FC = () => {
                           <Dropdown>
                             <DropdownTrigger>
                               <Button
-                                className={`capitalize w-24 h-16 bg-black ${
-                                  errors.size ? "text-red-500" : " text-white"
-                                }  text-xl`}
+                                className={`capitalize w-full h-12 bg-primaryColor ${
+                                  errors.size ? "border-2 border-red-500" : ""
+                                } text-white text-base`}
                                 variant="bordered"
                               >
-                                {field.value || "Select"}
+                                {field.value || "Select Size"}
                               </Button>
                             </DropdownTrigger>
                             <DropdownMenu
                               disallowEmptySelection
-                              aria-label="Select size"
+                              aria-label="Size selection"
                               selectedKeys={new Set([field.value])}
                               selectionMode="single"
                               variant="flat"
                               onSelectionChange={(keys) => {
-                                const selectedValue = Array.from(keys)[0]; // Extract selected size
-                                field.onChange(selectedValue); // Update React Hook Form state
+                                const selectedValue = Array.from(keys)[0]; 
+                                field.onChange(selectedValue);
                               }}
                             >
                               <DropdownItem key="small">Small</DropdownItem>
@@ -423,188 +420,179 @@ const Demo: React.FC = () => {
                           </Dropdown>
                         )}
                       />
+                      {errors.size && (
+                        <p className="text-red-500 text-sm mt-1">{errors.size.message}</p>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="w-[44rem] h-[15rem] bg-[#F8F9F8] rounded-2xl p-4 gap-4 flex flex-col">
-              <h1 className="text-2xl font-thin">Pricing and Stock</h1>
-              <div className=" flex gap-10">
-                <div className="gap-2 flex flex-col">
-                  <h1>Price</h1>
-                  <div className="h-12">
-                    <input
-                      key="outside"
-                      placeholder="Enter  product face"
-                      className="bg-[#EEEFEE] h-12 p-3 w-[19rem] rounded-xl"
-                      {...register("price")}
-                    />
-                    {errors.price && (
-                      <p className="text-red-500 relative top-[-5.6rem] left-[2.4rem] text-3xl ">
-                        {errors.price.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="gap-2 flex flex-col">
-                  <h1>Stock</h1>
-                  <div className="h-12">
-                    <input
-                      key="outside"
-                      placeholder="Enter  product stock"
-                      className="bg-[#EEEFEE] h-12 p-3 w-[20rem] rounded-xl"
-                      {...register("stock")}
-                    />
-                    {errors.stock && (
-                      <p className="text-red-500 relative top-[-5.8rem] left-[2.4rem] text-3xl ">
-                        {errors.stock.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="gap-3 mt-1 justify-center flex ">
-                {/* Sale Dropdown */}
-                <div className="gap-2 flex items-center ">
-                  <div className="text-center ">
-                    <h1>Sale</h1>
-                  </div>
-                  <div>
-                    <Controller
-                      name="isSale"
-                      control={control}
-                      defaultValue=""
-                      render={({ field }) => (
-                        <Dropdown>
-                          <DropdownTrigger>
-                            <Button
-                              className={`capitalize w-24 h-16 bg-black ${
-                                errors.isSale ? "text-red-500" : " text-white"
-                              }  text-xl`}
-                              variant="bordered"
-                              {...field} // Register the field here
-                            >
-                              {field.value || "Select"}
-                            </Button>
-                          </DropdownTrigger>
-                          <DropdownMenu
-                            disallowEmptySelection
-                            aria-label="Sale selection"
-                            selectedKeys={new Set([field.value])}
-                            selectionMode="single"
-                            variant="flat"
-                            onSelectionChange={(keys) => {
-                              const selectedValue = Array.from(keys)[0];
-                              field.onChange(selectedValue); // Update form value
-                            }}
-                          >
-                            <DropdownItem key="true">True</DropdownItem>
-                            <DropdownItem key="false">False</DropdownItem>
-                          </DropdownMenu>
-                        </Dropdown>
-                      )}
-                    />
-                  </div>
-                  <ul className="border" />
-                </div>
 
-                <div className="gap-2 flex items-center ">
-                  <div className="text-center ">
-                    <h1>Exclusive</h1>
-                  </div>
-                  <div>
-                    <Controller
-                      name="isExclusive"
-                      control={control}
-                      defaultValue=""
-                      render={({ field }) => (
-                        <Dropdown>
-                          <DropdownTrigger>
-                            <Button
-                              className={`capitalize w-24 h-16 bg-black ${
-                                errors.isExclusive
-                                  ? "text-red-500"
-                                  : " text-white"
-                              }  text-xl`}
-                              variant="bordered"
-                              {...field} // Register the field here
-                            >
-                              {field.value || "Select"}
-                            </Button>
-                          </DropdownTrigger>
-                          <DropdownMenu
-                            disallowEmptySelection
-                            aria-label="Exclusive selection"
-                            selectedKeys={new Set([field.value])}
-                            selectionMode="single"
-                            variant="flat"
-                            onSelectionChange={(keys) => {
-                              const selectedValue = Array.from(keys)[0];
-                              field.onChange(selectedValue); // Update form value
-                            }}
-                          >
-                            <DropdownItem key="true">True</DropdownItem>
-                            <DropdownItem key="false">False</DropdownItem>
-                          </DropdownMenu>
-                        </Dropdown>
+            <div className="bg-white rounded-xl shadow-sm">
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-700 mb-4">Pricing and Stock</h2>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+                        Price
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <input
+                          id="price"
+                          type="number"
+                          placeholder="Enter product price"
+                          className={`bg-[#EEEFEE] h-12 p-3 pl-8 w-full rounded-xl ${
+                            errors.price ? "border-2 border-red-500" : ""
+                          }`}
+                          {...register("price")}
+                        />
+                      </div>
+                      {errors.price && (
+                        <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
                       )}
-                    />
-                  </div>
-                  <ul className="border" />
-                </div>
-
-                {/* Special Dropdown */}
-                <div className="gap-2 flex items-center">
-                  <div className="text-center">
-                    <h1>Special</h1>
-                  </div>
-                  <div>
-                    <Controller
-                      name="isSpecial"
-                      control={control}
-                      defaultValue=""
-                      render={({ field }) => (
-                        <Dropdown>
-                          <DropdownTrigger>
-                            <Button
-                              className={`capitalize w-24 h-16 bg-black ${
-                                errors.isSpecial
-                                  ? "text-red-500"
-                                  : " text-white"
-                              }  text-xl`}
-                              variant="bordered"
-                              {...field} // Register the field here
-                            >
-                              {field.value || "Select"}
-                            </Button>
-                          </DropdownTrigger>
-                          <DropdownMenu
-                            disallowEmptySelection
-                            aria-label="Special selection"
-                            selectedKeys={new Set([field.value])}
-                            selectionMode="single"
-                            variant="flat"
-                            onSelectionChange={(keys) => {
-                              const selectedValue = Array.from(keys)[0];
-                              field.onChange(selectedValue); // Update form value
-                            }}
-                          >
-                            <DropdownItem key="true">True</DropdownItem>
-                            <DropdownItem key="false">False</DropdownItem>
-                          </DropdownMenu>
-                        </Dropdown>
-                      )}
-                    />
-                  </div>
-                  <ul className="border" />
-
-                  {/* Top Selling Dropdown */}
-                  <div className="gap-2 flex items-center">
-                    <div className="text-center">
-                      <h1>Top Selling</h1>
                     </div>
                     <div>
+                      <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">
+                        Stock
+                      </label>
+                      <input
+                        id="stock"
+                        type="number"
+                        placeholder="Enter product stock"
+                        className={`bg-[#EEEFEE] h-12 p-3 w-full rounded-xl ${
+                          errors.stock ? "border-2 border-red-500" : ""
+                        }`}
+                        {...register("stock")}
+                      />
+                      {errors.stock && (
+                        <p className="text-red-500 text-sm mt-1">{errors.stock.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                      <div className="text-sm font-medium text-gray-700 mb-1">Sale</div>
+                      <Controller
+                        name="isSale"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <Dropdown>
+                            <DropdownTrigger>
+                              <Button
+                                className={`capitalize w-full h-12 bg-primaryColor ${
+                                  errors.isSale ? "border-2 border-red-500" : ""
+                                } text-white text-base`}
+                                variant="bordered"
+                              >
+                                {field.value || "Select"}
+                              </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu
+                              disallowEmptySelection
+                              aria-label="Sale selection"
+                              selectedKeys={new Set([field.value])}
+                              selectionMode="single"
+                              variant="flat"
+                              onSelectionChange={(keys) => {
+                                const selectedValue = Array.from(keys)[0];
+                                field.onChange(selectedValue);
+                              }}
+                            >
+                              <DropdownItem key="True">True</DropdownItem>
+                              <DropdownItem key="False">False</DropdownItem>
+                            </DropdownMenu>
+                          </Dropdown>
+                        )}
+                      />
+                      {errors.isSale && (
+                        <p className="text-red-500 text-sm mt-1">{errors.isSale.message}</p>
+                      )}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-700 mb-1">Exclusive</div>
+                      <Controller
+                        name="isExclusive"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <Dropdown>
+                            <DropdownTrigger>
+                              <Button
+                                className={`capitalize w-full h-12 bg-primaryColor ${
+                                  errors.isExclusive ? "border-2 border-red-500" : ""
+                                } text-white text-base`}
+                                variant="bordered"
+                              >
+                                {field.value || "Select"}
+                              </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu
+                              disallowEmptySelection
+                              aria-label="Exclusive selection"
+                              selectedKeys={new Set([field.value])}
+                              selectionMode="single"
+                              variant="flat"
+                              onSelectionChange={(keys) => {
+                                const selectedValue = Array.from(keys)[0];
+                                field.onChange(selectedValue);
+                              }}
+                            >
+                              <DropdownItem key="True">True</DropdownItem>
+                              <DropdownItem key="False">False</DropdownItem>
+                            </DropdownMenu>
+                          </Dropdown>
+                        )}
+                      />
+                      {errors.isExclusive && (
+                        <p className="text-red-500 text-sm mt-1">{errors.isExclusive.message}</p>
+                      )}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-700 mb-1">Special</div>
+                      <Controller
+                        name="isSpecial"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <Dropdown>
+                            <DropdownTrigger>
+                              <Button
+                                className={`capitalize w-full h-12 bg-primaryColor ${
+                                  errors.isSpecial ? "border-2 border-red-500" : ""
+                                } text-white text-base`}
+                                variant="bordered"
+                              >
+                                {field.value || "Select"}
+                              </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu
+                              disallowEmptySelection
+                              aria-label="Special selection"
+                              selectedKeys={new Set([field.value])}
+                              selectionMode="single"
+                              variant="flat"
+                              onSelectionChange={(keys) => {
+                                const selectedValue = Array.from(keys)[0];
+                                field.onChange(selectedValue);
+                              }}
+                            >
+                              <DropdownItem key="True">True</DropdownItem>
+                              <DropdownItem key="False">False</DropdownItem>
+                            </DropdownMenu>
+                          </Dropdown>
+                        )}
+                      />
+                      {errors.isSpecial && (
+                        <p className="text-red-500 text-sm mt-1">{errors.isSpecial.message}</p>
+                      )}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-700 mb-1">Top Selling</div>
                       <Controller
                         name="isTopSelling"
                         control={control}
@@ -613,13 +601,10 @@ const Demo: React.FC = () => {
                           <Dropdown>
                             <DropdownTrigger>
                               <Button
-                                className={`capitalize w-24 h-16 bg-black ${
-                                  errors.isTopSelling
-                                    ? "text-red-500"
-                                    : " text-white"
-                                }  text-xl`}
+                                className={`capitalize w-full h-12 bg-primaryColor ${
+                                  errors.isTopSelling ? "border-2 border-red-500" : ""
+                                } text-white text-base`}
                                 variant="bordered"
-                                {...field} // Register the field here
                               >
                                 {field.value || "Select"}
                               </Button>
@@ -632,187 +617,193 @@ const Demo: React.FC = () => {
                               variant="flat"
                               onSelectionChange={(keys) => {
                                 const selectedValue = Array.from(keys)[0];
-                                field.onChange(selectedValue); // Update form value
+                                field.onChange(selectedValue);
                               }}
                             >
-                              <DropdownItem key="true">True</DropdownItem>
-                              <DropdownItem key="false">False</DropdownItem>
+                              <DropdownItem key="True">True</DropdownItem>
+                              <DropdownItem key="False">False</DropdownItem>
                             </DropdownMenu>
                           </Dropdown>
                         )}
                       />
+                      {errors.isTopSelling && (
+                        <p className="text-red-500 text-sm mt-1">{errors.isTopSelling.message}</p>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div className="flex flex-col gap-6">
-            <div className="w-[28rem] h-fit bg-[#F8F9F8] rounded-2xl p-6 gap-6 flex flex-col">
-              <h1 className="text-2xl font-thin">Upload image</h1>
-              <div className="rounded-xl w-full h-full">
-                {selectImage === "" ? (
-                  <div className="rounded-xl w-[25rem] h-[18rem] flex items-center justify-center bg-gray-200">
-                    {errors.img && (
-                      <p className="text-red-400">{errors.img.message}</p>
+
+          {/* Right column - Images and Category */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm">
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-700 mb-4">Product Images</h2>
+                <div className="space-y-4">
+                  <div className="relative">
+                    {selectImage ? (
+                      <div className="relative">
+                        <Image
+                          alt="Product Image"
+                          src={selectImage}
+                          width={416}
+                          height={320}
+                          quality={100}
+                          className="h-64 w-full rounded-xl object-cover border-2 border-gray-200"
+                        />
+                        <button
+                          type="button"
+                          className="absolute top-2 right-2"
+                          onClick={() => handleRemoveImage(productImages.indexOf(selectImage))}
+                        >
+                          <IoCloseCircle size={30} className="text-red-500 bg-white rounded-full" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="h-64 w-full rounded-xl flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300">
+                        {errors.img ? (
+                          <p className="text-red-500">{errors.img.message}</p>
+                        ) : (
+                          <p className="text-gray-400">No image selected</p>
+                        )}
+                      </div>
                     )}
                   </div>
-                ) : (
-                  <>
-                    <Image
-                      alt="HeroUI hero Image"
-                      src={selectImage || ""}
-                      width={416}
-                      height={320}
-                      quality={100}
-                      className="h-[20rem] w-[26rem] rounded-xl object-cover"
-                    />
-                    <button
-                      className="absolute top-[9rem] right-[3.7rem] "
-                      onClick={() =>
-                        handleRemoveImage(
-                          productImages.indexOf(selectImage || " ")
-                        )
-                      }
+
+                  <div className="flex gap-2 overflow-x-auto py-2">
+                    {productImages.map((img, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        className={`relative rounded-lg flex-shrink-0 h-16 w-16 overflow-hidden ${
+                          selectImage === img ? "ring-2 ring-primaryColor" : "ring-1 ring-gray-200"
+                        }`}
+                        onClick={() => handleSelectImage(index)}
+                      >
+                        <Image
+                          alt={`Product thumbnail ${index + 1}`}
+                          src={img}
+                          width={64}
+                          height={64}
+                          className="object-cover h-full w-full"
+                        />
+                      </button>
+                    ))}
+
+                    <label 
+                      htmlFor="upload-image" 
+                      className="flex-shrink-0 h-16 w-16 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-50"
                     >
-                      <IoCloseCircle size={38} className="text-red-500" />
-                    </button>
-                  </>
-                )}
-              </div>
-
-              <div className="flex gap-2">
-                {productImages.map((img, index) => (
-                  <div
-                    key={index}
-                    className="rounded-xl w-1/5 h-24"
-                    onClick={() => handleSelectImage(index)}
-                  >
-                    <Image
-                      alt="HeroUI hero Image"
-                      src={img || " "}
-                      width={300}
-                      height={300}
-                      quality={100}
-                      className={`object-cover h-full w-full rounded-xl ${
-                        selectImage === img
-                          ? "border-[3.5px] border-gray-400"
-                          : ""
-                      }`}
-                    />
-                  </div>
-                ))}
-
-                <div className="rounded-xl w-1/5 h-24 border-dashed border-[3.5px]">
-                  <div className="flex justify-center items-center h-full w-full">
-                    <label htmlFor="upload-image" className="cursor-pointer">
-                      <CiCirclePlus
-                        size={35}
-                        className="bg-green-400 text-white rounded-full"
+                      <CiCirclePlus size={30} className="text-primaryColor" />
+                      <input
+                        id="upload-image"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        multiple
+                        onChange={handleImageUpload}
                       />
                     </label>
-                    <input
-                      id="upload-image"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      multiple // Allow multiple file selection
-                      onChange={handleImageUpload} // Handle image upload
-                    />
                   </div>
                 </div>
               </div>
             </div>
-            <div className="w-[28rem] h-[11rem] bg-[#F8F9F8] rounded-2xl p-4 flex flex-col gap-4">
-              <h1 className="text-2xl font-thin">Category</h1>
-              <div className="flex justify-around gap-6">
-                <div>
-                  <p>Product Category</p>
 
-                  <Controller
-                    name="category"
-                    control={control}
-                    defaultValue=""
-                    render={({ field }) => (
-                      <Dropdown>
-                        <DropdownTrigger>
-                          <Button
-                            className={`capitalize w-[10rem] h-16 bg-black ${
-                              errors.category ? "text-red-500" : " text-white"
-                            }  text-xl `}
-                            variant="bordered"
-                            {...field} // Register the field here
+            <div className="bg-white rounded-xl shadow-sm">
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-700 mb-4">Category</h2>
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-1">Product Category</div>
+                    <Controller
+                      name="category"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <Dropdown>
+                          <DropdownTrigger>
+                            <Button
+                              className={`capitalize w-full h-12 bg-primaryColor ${
+                                errors.category ? "border-2 border-red-500" : ""
+                              } text-white text-base`}
+                              variant="bordered"
+                            >
+                              {field.value || "Select Category"}
+                            </Button>
+                          </DropdownTrigger>
+                          <DropdownMenu
+                            disallowEmptySelection
+                            aria-label="Category selection"
+                            selectedKeys={new Set([field.value])}
+                            selectionMode="single"
+                            variant="flat"
+                            onSelectionChange={(keys) => {
+                              const selectedValue = Array.from(keys)[0];
+                              field.onChange(selectedValue);
+                            }}
                           >
-                            {field.value || "Select"}
-                          </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
-                          disallowEmptySelection
-                          aria-label="Category selection"
-                          selectedKeys={new Set([field.value])}
-                          selectionMode="single"
-                          variant="flat"
-                          onSelectionChange={(keys) => {
-                            const selectedValue = Array.from(keys)[0];
-                            field.onChange(selectedValue); // Update form value
-                          }}
-                        >
-                          <DropdownItem key="mala">Mala</DropdownItem>
-                          <DropdownItem key="Beads">Beads</DropdownItem>
-                          <DropdownItem key="bracelet">Bracelet</DropdownItem>
-                        </DropdownMenu>
-                      </Dropdown>
+                            <DropdownItem key="mala">Mala</DropdownItem>
+                            <DropdownItem key="Beads">Beads</DropdownItem>
+                            <DropdownItem key="bracelet">Bracelet</DropdownItem>
+                          </DropdownMenu>
+                        </Dropdown>
+                      )}
+                    />
+                    {errors.category && (
+                      <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
                     )}
-                  />
-                </div>
-                <div>
-                  <p>Sub Category</p>
+                  </div>
 
-                  <Controller
-                    name="subCategory"
-                    control={control}
-                    defaultValue=""
-                    render={({ field }) => (
-                      <Dropdown>
-                        <DropdownTrigger>
-                          <Button
-                            className={`capitalize w-[10rem] h-16 bg-black ${
-                              errors.subCategory
-                                ? "text-red-500"
-                                : " text-white"
-                            }  text-xl`}
-                            variant="bordered"
-                            {...field} // Register the field here
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-1">Sub Category</div>
+                    <Controller
+                      name="subCategory"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <Dropdown isDisabled={!selectedCategory}>
+                          <DropdownTrigger>
+                            <Button
+                              className={`capitalize w-full h-12 bg-primaryColor ${
+                                errors.subCategory ? "border-2 border-red-500" : ""
+                              } text-white text-base ${!selectedCategory ? "opacity-70" : ""}`}
+                              variant="bordered"
+                            >
+                              {field.value || "Select Sub-Category"}
+                            </Button>
+                          </DropdownTrigger>
+                          <DropdownMenu
+                            disallowEmptySelection
+                            aria-label="Sub-Category selection"
+                            selectedKeys={new Set([field.value])}
+                            selectionMode="single"
+                            variant="flat"
+                            onSelectionChange={(keys) => {
+                              const selectedValue = Array.from(keys)[0];
+                              field.onChange(selectedValue);
+                            }}
                           >
-                            {field.value || "Select"}
-                          </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
-                          disallowEmptySelection
-                          aria-label="Category selection"
-                          selectedKeys={new Set([field.value])}
-                          selectionMode="single"
-                          variant="flat"
-                          onSelectionChange={(keys) => {
-                            const selectedValue = Array.from(keys)[0];
-                            field.onChange(selectedValue); // Update form value
-                          }}
-                        >
-                          {subCategoryOptions.length > 0 ? (
-                            subCategoryOptions.map((sub) => (
-                              <DropdownItem key={sub.name}>
-                                {sub.name}
+                            {subCategoryOptions.length > 0 ? (
+                              subCategoryOptions.map((sub) => (
+                                <DropdownItem key={sub.name} value={sub.name}>
+                                  {sub.name}
+                                </DropdownItem>
+                              ))
+                            ) : (
+                              <DropdownItem key="noSub">
+                                No Subcategories
                               </DropdownItem>
-                            ))
-                          ) : (
-                            <DropdownItem key="noSub">
-                              No Subcategories
-                            </DropdownItem>
-                          )}
-                        </DropdownMenu>
-                      </Dropdown>
+                            )}
+                          </DropdownMenu>
+                        </Dropdown>
+                      )}
+                    />
+                    {errors.subCategory && (
+                      <p className="text-red-500 text-sm mt-1">{errors.subCategory.message}</p>
                     )}
-                  />
+                  </div>
                 </div>
               </div>
             </div>

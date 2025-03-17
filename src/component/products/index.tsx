@@ -45,6 +45,7 @@ import { MdDelete } from "react-icons/md";
 import { getAllProduct, deleteProduct } from "@/services/product";
 import Image from "next/image";
 import { FaPlus } from "react-icons/fa";
+import Loader from "../Loader";
 
 export type Payment = {
   _id?: string;
@@ -207,7 +208,7 @@ export default function Products() {
     fetchData(1, 8);
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Loader/>
   if (error) return <div>Error: {error}</div>;
 
   return (
@@ -222,9 +223,9 @@ export default function Products() {
           className="max-w-sm"
         />
         <Link href="/products/product/new" passHref>
-          <Button variant="outline">
-            <FaPlus className="text-xl text-green-600 " />
-            <h1 className="text-green-600 text-lg">Add Product</h1>
+          <Button className="bg-primaryColor hover:bg-primaryColor/90        text-sm">
+            <FaPlus className="text-base text-white " />
+            <h1 className="text-white text-base">Add Product</h1>
           </Button>
         </Link>
       </div>
