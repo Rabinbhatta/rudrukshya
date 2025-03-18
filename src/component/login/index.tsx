@@ -24,7 +24,7 @@ export default function Login() {
   } = useForm<formfields>({ resolver: zodResolver(registerSchema) });
   const router = useRouter();
 
-  const { mutate: mutateLogin } = useMutation({
+  const { mutate: mutateLogin,isPending } = useMutation({
     mutationFn: (data: formfields) =>
       signIn("credentials", {
         email: data.email,
@@ -94,6 +94,7 @@ export default function Login() {
           </div>
           <button
             type="submit"
+            disabled={isPending}                 
             className="w-full bg-primaryColor text-white py-2 px-4 rounded-md"
           >
             Login
