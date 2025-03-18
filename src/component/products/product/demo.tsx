@@ -22,7 +22,7 @@ import { CiCirclePlus } from "react-icons/ci";
 import { IoCloseCircle } from "react-icons/io5";
 import { toast } from "sonner";
 import { getAllCategories } from "@/services/categories";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { josefin } from "@/utils/font";
 
 interface SubCategory {
@@ -57,6 +57,7 @@ const schema = z.object({
 export type formFields = z.infer<typeof schema>;
 
 const Demo: React.FC = () => {
+  const router=useRouter()              
   const [page, setPage] = useState<boolean>(false);
   const params = useParams<{ id: string }>();
   const {
@@ -170,6 +171,7 @@ const Demo: React.FC = () => {
         });
         await createProduct(formData);
         toast.success("Product added successfully");
+        router.push("/products")
         reset();
         productImages.forEach((url) => URL.revokeObjectURL(url));
 
@@ -181,6 +183,7 @@ const Demo: React.FC = () => {
         });
         await updateProduct(params.id, formData);
         toast.success("Product updated successfully");
+        router.push("/products")
         productImages.forEach((url) => URL.revokeObjectURL(url));
         return;
       }
@@ -211,6 +214,7 @@ const Demo: React.FC = () => {
       setValue("isExclusive", data.product.isExclusive ? "True" : "False");
       setValue("isSpecial", data.product.isSpecial ? "True" : "False");
       setValue("isTopSelling", data.product.isTopSelling ? "True" : "False");
+      setValue("subCategory", data.product.subCategory);                    
       
       console.log(data);
     } catch (error) {
@@ -258,7 +262,7 @@ const Demo: React.FC = () => {
         <Button 
           className="bg-primaryColor text-white rounded-xl hover:bg-primaryColor/90 transition-colors"
           type="submit"
-          onPress={()=>handleSubmit(onSubmit)}
+          onClick={handleSubmit(onSubmit)}
         >
           <div className="flex items-center gap-2">
             {page ? null : <SiTicktick className="h-4 w-4" />}
